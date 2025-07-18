@@ -1,3 +1,5 @@
+# please star this repo if you use it thanks!!
+
 # JKLM.GAY
 
 This is a basic website that I (...and AI) coded in like 5 minutes
