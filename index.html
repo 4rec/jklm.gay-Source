@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+  <title>JKLM.GAY - Word Finder</title>
+  <meta name="description" content="Find words containing specific letter groups from a massive dictionary">
+  <link rel="stylesheet" href="https://jklm.fun/common/fonts/fonts.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap">
+  <link rel="stylesheet" href="https://jklm.fun/common/base.css">
+  <link rel="stylesheet" href="https://jklm.fun/central.css">
+  <style>
+    /* Pacifico font for logo */
+    .top h1 a {
+      font-family: 'Pacifico', cursive;
+      font-weight: normal;
+      color: #fff;
+    }
+    
+    /* Light mode word finder */
+    .wordFinder {
+      background-color: #ffffff;
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px auto;
+      max-width: 800px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+      border: 1px solid #e0e0e0;
+    }
+    
+    .wordInput {
+      width: 100%;
+      padding: 12px;
+      font-size: 1.2em;
+      background-color: #f8f8f8;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      color: #333;
+      margin-bottom: 20px;
+      transition: all 0.2s;
+    }
+    
+    .wordInput:focus {
+      border-color: #4a6baf;
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(74,107,175,0.2);
+    }
+    
+    .wordResults {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 15px;
+    }
+    
+    .wordBox {
+      background-color: #f9f9f9;
+      border-radius: 4px;
+      padding: 15px;
+      min-height: 120px;
+      border: 1px solid #eaeaea;
+      transition: all 0.2s;
+      cursor: pointer;
+      position: relative;
+    }
+    
+    .wordBox:hover {
+      background-color: #f0f4ff;
+      border-color: #d0d8f0;
+    }
+    
+    .wordBox.copied::after {
+      content: 'Copied!';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: #4a6baf;
+      color: white;
+      padding: 5px 10px;
+      border-radius: 4px;
+      font-size: 0.8em;
+      opacity: 0;
+      animation: fadeInOut 1.5s ease-in-out;
+    }
+    
+    @keyframes fadeInOut {
+      0% { opacity: 0; }
+      20% { opacity: 1; }
+      80% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+    
+    .wordTitle {
+      font-weight: bold;
+      margin-bottom: 10px;
+      color: #4a6baf;
+      font-size: 0.9em;
+    }
+    
+    .wordValue {
+      font-size: 1.4em;
+      word-break: break-word;
+      color: #333;
+    }
+    
+    .infoText {
+      color: #666;
+      margin-top: 20px;
+      font-size: 0.9em;
+      text-align: center;
+      font-style: italic;
+    }
+    
+    .downloadBtn {
+      display: block;
+      margin: 30px auto;
+      padding: 10px 20px;
+      background-color: #4a6baf;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-size: 1em;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    
+    .downloadBtn:hover {
+      background-color: #3a5a9f;
+    }
+    
+    @media (max-width: 768px) {
+      .wordResults {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body class="darkScrollbar">
+  <div class="base">
+    <div class="top">
+      <h1><a href="/">JKLM.GAY</a></h1>
+      <div class="setup">
+        <div class="wrap">
+          <button class="auth">
+            <img class="service" src="https://avatars.githubusercontent.com/u/221444352?v=4&size=64" alt="Guest">
+            <span class="nickname">made by rec <3</span>
+          </button>
+          <div class="picture"></div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="home page">
+      <div class="banner"></div>
+      
+      <div class="wordFinder">
+        <h2 style="color: #4a6baf; margin-top: 0;">Word Finder</h2>
+        <input type="text" class="wordInput" id="letterGroup" 
+               placeholder="Enter letter group (e.g. 'tion')" 
+               autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+        
+        <div class="wordResults">
+          <div class="wordBox" data-target="shortest">
+            <div class="wordTitle">Shortest</div>
+            <div class="wordValue" id="shortest">-</div>
+          </div>
+          <div class="wordBox" data-target="longest">
+            <div class="wordTitle">Longest</div>
+            <div class="wordValue" id="longest">-</div>
+          </div>
+          <div class="wordBox" data-target="hyphen">
+            <div class="wordTitle">With hyphen</div>
+            <div class="wordValue" id="hyphen">-</div>
+          </div>
+          <div class="wordBox" data-target="apostrophe">
+            <div class="wordTitle">With apostrophe</div>
+            <div class="wordValue" id="apostrophe">-</div>
+          </div>
+          <div class="wordBox" data-target="random">
+            <div class="wordTitle">Random</div>
+            <div class="wordValue" id="random">-</div>
+          </div>
+        </div>
+        
+        <div class="infoText">
+          Results update automatically • Press Ctrl to refresh random selections
+        </div>
+        
+        <button class="downloadBtn" id="downloadWordlist">Download Wordlist (JSON)</button>
+      </div>
+      
+      <div class="footer">
+        <img src="https://jklm.fun/images/sparklinlabs.svg">
+        <a href="http://sparklinlabs.com/">Not-Sparklin Labs ♥</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let wordList = [];
+    let currentLetterGroup = '';
+    let debounceTimer;
+    
+    // Fetch the word list
+    async function loadWords() {
+      try {
+        const response = await fetch('https://jklm.gay/jklm-wordlist.json');
+        wordList = await response.json();
+        console.log('Loaded', wordList.length, 'words');
+      } catch (error) {
+        console.error('Error loading word list:', error);
+      }
+    }
+    
+    // Find words containing the letter group
+    function findWords(letterGroup) {
+      letterGroup = letterGroup.toLowerCase().trim();
+      
+      if (!letterGroup || letterGroup.length === 0) {
+        clearResults();
+        return;
+      }
+      
+      currentLetterGroup = letterGroup;
+      const wordsContaining = wordList.filter(word => 
+        word.toLowerCase().includes(currentLetterGroup) &&
+        word.length >= 2 && word.length <= 30
+      );
+      
+      if (wordsContaining.length === 0) {
+        showNoResults();
+        return;
+      }
+      
+      updateResults(wordsContaining);
+    }
+    
+    function clearResults() {
+      document.getElementById('shortest').textContent = '-';
+      document.getElementById('longest').textContent = '-';
+      document.getElementById('hyphen').textContent = '-';
+      document.getElementById('apostrophe').textContent = '-';
+      document.getElementById('random').textContent = '-';
+    }
+    
+    function showNoResults() {
+      document.getElementById('shortest').textContent = 'None';
+      document.getElementById('longest').textContent = 'None';
+      document.getElementById('hyphen').textContent = 'None';
+      document.getElementById('apostrophe').textContent = 'None';
+      document.getElementById('random').textContent = 'None';
+    }
+    
+    function updateResults(wordsContaining) {
+      // Sort by length
+      const sortedByLength = [...wordsContaining].sort((a, b) => a.length - b.length);
+      
+      // Update the UI
+      document.getElementById('shortest').textContent = sortedByLength[0] || '-';
+      document.getElementById('longest').textContent = sortedByLength[sortedByLength.length - 1] || '-';
+      
+      // Find words with hyphen and apostrophe
+      const withHyphen = wordsContaining.find(word => word.includes('-'));
+      const withApostrophe = wordsContaining.find(word => word.includes("'"));
+      
+      document.getElementById('hyphen').textContent = withHyphen || 
+        wordsContaining[Math.floor(Math.random() * wordsContaining.length)] || '-';
+      document.getElementById('apostrophe').textContent = withApostrophe || 
+        wordsContaining[Math.floor(Math.random() * wordsContaining.length)] || '-';
+      document.getElementById('random').textContent = 
+        wordsContaining[Math.floor(Math.random() * wordsContaining.length)] || '-';
+    }
+    
+    function refreshRandom() {
+      if (!currentLetterGroup) return;
+      
+      const wordsContaining = wordList.filter(word => 
+        word.toLowerCase().includes(currentLetterGroup) &&
+        word.length >= 2 && word.length <= 30
+      );
+      
+      if (wordsContaining.length > 0) {
+        const withHyphen = wordsContaining.find(word => word.includes('-'));
+        const withApostrophe = wordsContaining.find(word => word.includes("'"));
+        
+        document.getElementById('hyphen').textContent = withHyphen || 
+          wordsContaining[Math.floor(Math.random() * wordsContaining.length)] || '-';
+        document.getElementById('apostrophe').textContent = withApostrophe || 
+          wordsContaining[Math.floor(Math.random() * wordsContaining.length)] || '-';
+        document.getElementById('random').textContent = 
+          wordsContaining[Math.floor(Math.random() * wordsContaining.length)] || '-';
+      }
+    }
+    
+    // Copy to clipboard function
+    function copyToClipboard(text) {
+      navigator.clipboard.writeText(text).then(() => {
+        console.log('Copied to clipboard:', text);
+      }).catch(err => {
+        console.error('Failed to copy:', err);
+      });
+    }
+    
+    // Download wordlist as JSON
+    function downloadWordlist() {
+      const blob = new Blob([JSON.stringify(wordList, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'jklm-wordlist.json';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+    
+    // Event listeners
+    document.getElementById('letterGroup').addEventListener('input', (e) => {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        findWords(e.target.value);
+      }, 300);
+    });
+    
+    document.addEventListener('keydown', (e) => {
+      if (e.ctrlKey && currentLetterGroup) {
+        e.preventDefault();
+        refreshRandom();
+      }
+    });
+    
+    // Click to copy for word boxes
+    document.querySelectorAll('.wordBox').forEach(box => {
+      box.addEventListener('click', () => {
+        const targetId = box.getAttribute('data-target');
+        const word = document.getElementById(targetId).textContent;
+        if (word && word !== '-' && word !== 'None') {
+          copyToClipboard(word);
+          box.classList.add('copied');
+          setTimeout(() => {
+            box.classList.remove('copied');
+          }, 1500);
+        }
+      });
+    });
+    
+    // Download wordlist button
+    document.getElementById('downloadWordlist').addEventListener('click', downloadWordlist);
+    
+    // Initialize
+    loadWords();
+  </script>
+</body>
+
+</html>
