@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>jklm.gay</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #0a0a14;
+            color: #e6e6fa;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', monospace;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .text-container {
+            text-align: center;
+            z-index: 10;
+            position: relative;
+            padding: 20px;
+            background-color: rgba(10, 10, 20, 0.3);
+            backdrop-filter: blur(5px);
+            border-radius: 10px;
+            border: 1px solid rgba(106, 13, 173, 0.2);
+        }
+
+        .main-text {
+            font-size: 4rem;
+            font-weight: 300;
+            letter-spacing: 0.1em;
+            margin-bottom: 10px;
+            color: #9d4edd;
+            text-shadow: 0 0 15px rgba(157, 78, 221, 0.7);
+        }
+
+        .sub-text {
+            font-size: 1rem;
+            color: #b8a2d1;
+            letter-spacing: 0.05em;
+        }
+
+        .sub-text a {
+            color: #d4af37;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .sub-text a:hover {
+            color: #9d4edd;
+            text-decoration: underline;
+        }
+
+        /* Animated background elements */
+        .bg-element {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(106, 13, 173, 0.1) 0%, rgba(106, 13, 173, 0) 70%);
+            z-index: 1;
+        }
+
+        .bg-line {
+            position: absolute;
+            background: linear-gradient(90deg, transparent, rgba(157, 78, 221, 0.1), transparent);
+            z-index: 1;
+        }
+
+        .bg-shape {
+            position: absolute;
+            background: rgba(106, 13, 173, 0.03);
+            border: 1px solid rgba(106, 13, 173, 0.1);
+            z-index: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="text-container">
+        <div class="main-text">jklm.gay</div>
+        <div class="sub-text">made by <a href="https://github.com/4rec" target="_blank">rec</a></div>
+    </div>
+
+    <script>
+        // Create animated background elements
+        function createBackground() {
+            const body = document.body;
+            
+            // Create large gradient circles
+            for (let i = 0; i < 8; i++) {
+                const circle = document.createElement('div');
+                circle.classList.add('bg-element');
+                
+                // Random size between 200px and 500px
+                const size = Math.random() * 300 + 200;
+                circle.style.width = `${size}px`;
+                circle.style.height = `${size}px`;
+                
+                // Random position
+                const x = Math.random() * 100;
+                const y = Math.random() * 100;
+                circle.style.left = `${x}%`;
+                circle.style.top = `${y}%`;
+                
+                // Random animation
+                const duration = Math.random() * 40 + 20;
+                circle.style.animation = `float ${duration}s ease-in-out infinite`;
+                
+                // Add to page
+                body.appendChild(circle);
+                
+                // Start animation with random delay
+                setTimeout(() => {
+                    animateElement(circle);
+                }, Math.random() * 2000);
+            }
+            
+            // Create lines
+            for (let i = 0; i < 5; i++) {
+                const line = document.createElement('div');
+                line.classList.add('bg-line');
+                
+                // Random dimensions
+                const width = Math.random() * 300 + 100;
+                const height = 1;
+                line.style.width = `${width}px`;
+                line.style.height = `${height}px`;
+                
+                // Random position and rotation
+                const x = Math.random() * 100;
+                const y = Math.random() * 100;
+                const rotation = Math.random() * 360;
+                line.style.left = `${x}%`;
+                line.style.top = `${y}%`;
+                line.style.transform = `rotate(${rotation}deg)`;
+                
+                // Random animation
+                const duration = Math.random() * 30 + 15;
+                line.style.animation = `pulse ${duration}s ease-in-out infinite`;
+                
+                // Add to page
+                body.appendChild(line);
+            }
+            
+            // Create geometric shapes
+            for (let i = 0; i; i < 6; i++) {
+                const shape = document.createElement('div');
+                shape.classList.add('bg-shape');
+                
+                // Random size
+                const size = Math.random() * 80 + 40;
+                shape.style.width = `${size}px`;
+                shape.style.height = `${size}px`;
+                
+                // Random position
+                const x = Math.random() * 100;
+                const y = Math.random() * 100;
+                shape.style.left = `${x}%`;
+                shape.style.top = `${y}%`;
+                
+                // Random border radius for variety
+                if (Math.random() > 0.5) {
+                    shape.style.borderRadius = '10%';
+                } else {
+                    shape.style.borderRadius = '50%';
+                }
+                
+                // Random rotation
+                const rotation = Math.random() * 360;
+                shape.style.transform = `rotate(${rotation}deg)`;
+                
+                // Random animation
+                const duration = Math.random() * 50 + 25;
+                shape.style.animation = `drift ${duration}s linear infinite`;
+                
+                // Add to page
+                body.appendChild(shape);
+            }
+        }
+        
+        // Animate elements
+        function animateElement(element) {
+            const x = Math.random() * 90 + 5;
+            const y = Math.random() * 90 + 5;
+            
+            element.animate([
+                { transform: `translate(0, 0)` },
+                { transform: `translate(${x - 50}px, ${y - 50}px)` }
+            ], {
+                duration: Math.random() * 20000 + 10000,
+                direction: 'alternate',
+                iterations: Infinity,
+                easing: 'ease-in-out'
+            });
+        }
+        
+        // Add CSS keyframes dynamically
+        function addKeyframes() {
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes float {
+                    0%, 100% {
+                        transform: translate(0, 0) scale(1);
+                        opacity: 0.1;
+                    }
+                    33% {
+                        transform: translate(30px, -20px) scale(1.05);
+                        opacity: 0.15;
+                    }
+                    66% {
+                        transform: translate(-20px, 15px) scale(0.95);
+                        opacity: 0.08;
+                    }
+                }
+                
+                @keyframes pulse {
+                    0%, 100% {
+                        opacity: 0.05;
+                    }
+                    50% {
+                        opacity: 0.2;
+                    }
+                }
+                
+                @keyframes drift {
+                    0% {
+                        transform: translate(0, 0) rotate(0deg);
+                    }
+                    100% {
+                        transform: translate(100px, 50px) rotate(360deg);
+                    }
+                }
+                
+                .main-text {
+                    animation: textGlow 4s ease-in-out infinite alternate;
+                }
+                
+                @keyframes textGlow {
+                    0% {
+                        text-shadow: 0 0 10px rgba(157, 78, 221, 0.5);
+                    }
+                    100% {
+                        text-shadow: 0 0 20px rgba(157, 78, 221, 0.8), 0 0 30px rgba(157, 78, 221, 0.4);
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            addKeyframes();
+            createBackground();
+            
+            // Add subtle mouse move effect
+            document.addEventListener('mousemove', (e) => {
+                const x = (e.clientX / window.innerWidth) * 20 - 10;
+                const y = (e.clientY / window.innerHeight) * 20 - 10;
+                
+                const textContainer = document.querySelector('.text-container');
+                textContainer.style.transform = `translate(${x}px, ${y}px)`;
+            });
+        });
+    </script>
+</body>
+</html>
