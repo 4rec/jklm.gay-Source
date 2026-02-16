@@ -282,7 +282,7 @@
             font-weight: 500;
         }
 
-        /* country dropdown - with flag images (non-wavy, fixed size) */
+        /* country dropdown - with flag images from flagcdn */
         .custom-dropdown {
             position: relative;
             width: 100%;
@@ -294,7 +294,7 @@
         .dropdown-selected {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
             padding: 0.9rem 1.2rem;
             cursor: pointer;
             background: #0c0c0c;
@@ -305,8 +305,8 @@
         .dropdown-selected img {
             width: 28px;
             height: 21px;
-            object-fit: cover;          /* keeps aspect ratio, no stretching/waving */
-            border-radius: 2px;
+            object-fit: cover;
+            border-radius: 3px;
             border: 1px solid #3a3a3a;
         }
 
@@ -379,11 +379,11 @@
         }
 
         .dropdown-option img {
-            width: 28px;
-            height: 21px;
+            width: 32px;
+            height: 24px;
             object-fit: cover;
             border: 1px solid #3d3d3d;
-            border-radius: 2px;
+            border-radius: 3px;
         }
 
         .dropdown-option span {
@@ -600,12 +600,12 @@
                 </div>
                 <div class="step-item" id="step2">
                     <span class="step-indicator">2</span>
-                    <span>fetching available countries</span>
+                    <span>fetching country list</span>
                     <span class="step-spinner" id="spinner2" style="display:none;"></span>
                 </div>
                 <div class="step-item" id="step3">
                     <span class="step-indicator">3</span>
-                    <span>loading country details</span>
+                    <span>loading country data</span>
                     <span class="step-spinner" id="spinner3" style="display:none;"></span>
                 </div>
             </div>
@@ -654,8 +654,7 @@
     (function() {
         // config
         const BASE_URL = 'https://proxy-api-zeta.vercel.app';
-        // We no longer fetch CSV for dropdown; only for photos if needed.
-        const CSV_URL = 'https://jklm.gay/list.csv';
+        // We'll use flagcdn for images and names, but country codes come from the API
 
         // screens
         const loginScreen = document.getElementById('loginScreen');
@@ -682,8 +681,8 @@
         // state
         let apiKey = '';
         let username = 'user';
-        let countriesList = [];          // will be populated from API: [{ code, name, photoUrl }]
-        let selectedCountryCode = '';
+        let countriesFull = [];          // { code, name, photoUrl }
+        let selectedCountryCode = 'bs';
 
         // --- helper: decode base64 api key to username
         function extractUsernameFromKey(key) {
@@ -718,83 +717,102 @@
             spinner3.style.display = step === 3 ? 'block' : 'none';
         }
 
-        // --- fetch country list from API, then enrich with names/photos from CSV/flagcdn
-        async function loadCountryDataFromAPI(key) {
-            // step 2: get codes from proxy/countries
-            setStep(2, 'fetching country codes from API...');
-            let apiCodes = [];
+        // --- fetch country list from the API (requires key)
+        async function fetchCountryCodesFromAPI(key) {
             try {
-                const res = await fetch(`${BASE_URL}/proxy/countries`, { headers: { 'x-api-key': key } });
-                if (!res.ok) throw new Error(`API error ${res.status}`);
-                const data = await res.json();
-                apiCodes = data.countries || [];
-                if (!apiCodes.length) throw new Error('No countries returned');
+                const res = await fetch(`${BASE_URL}/proxy/countries`, {
+                    headers: { 'x-api-key': key }
+                });
+                if (!res.ok) throw new Error('API error');
+                const json = await res.json();
+                // expected: { countries: ["ca","bm", ...] }
+                return json.countries || [];
             } catch (e) {
-                throw new Error('Failed to fetch country list from API');
+                console.warn('Failed to fetch countries from API', e);
+                return [];
             }
-
-            // step 3: enrich codes with names and photos
-            setStep(3, 'enriching with country names and photos...');
-            // First, try to get full data from CSV (includes photos)
-            let csvMap = new Map(); // code -> { name, photoUrl }
-            try {
-                const csvRes = await fetch(CSV_URL);
-                if (csvRes.ok) {
-                    const csvText = await csvRes.text();
-                    const lines = csvText.split('\n').filter(l => l.trim());
-                    const headers = lines[0].split(',').map(h => h.trim());
-                    const nameIdx = headers.indexOf('English short name');
-                    const codeIdx = headers.indexOf('Alpha-2 code');
-                    const photoIdx = headers.indexOf('PhotoUrl');
-                    if (nameIdx !== -1 && codeIdx !== -1 && photoIdx !== -1) {
-                        for (let i = 1; i < lines.length; i++) {
-                            const parts = lines[i].match(/(".*?"|[^,]+)(?=\s*,|\s*$)/g) || [];
-                            const clean = parts.map(p => p.replace(/^"|"$/g, '').trim());
-                            if (clean.length <= Math.max(nameIdx, codeIdx, photoIdx)) continue;
-                            const code = clean[codeIdx]?.toLowerCase();
-                            const name = clean[nameIdx];
-                            const photo = clean[photoIdx];
-                            if (code && name && photo) csvMap.set(code, { name, photoUrl: photo });
-                        }
-                    }
-                }
-            } catch (e) { /* ignore CSV errors, fallback to flagcdn */ }
-
-            // Build final countriesList using API codes
-            const enriched = [];
-            for (const code of apiCodes) {
-                const lowerCode = code.toLowerCase();
-                let name = code.toUpperCase();
-                let photoUrl = `https://flagcdn.com/w80/${lowerCode}.png`; // default flag
-                if (csvMap.has(lowerCode)) {
-                    name = csvMap.get(lowerCode).name;
-                    photoUrl = csvMap.get(lowerCode).photoUrl; // use CSV photo if available
-                } else {
-                    // try to get name from flagcdn codes
-                    try {
-                        const flagRes = await fetch('https://flagcdn.com/en/codes.json');
-                        const flagData = await flagRes.json();
-                        if (flagData[code.toUpperCase()]) {
-                            name = flagData[code.toUpperCase()];
-                        }
-                    } catch { }
-                }
-                enriched.push({ code: lowerCode, name, photoUrl });
-            }
-
-            return enriched.sort((a, b) => a.name.localeCompare(b.name));
         }
 
-        // --- render dropdown with flag images (non-wavy)
+        // --- fetch flag data from flagcdn to get full names
+        async function fetchFlagNameMap() {
+            try {
+                const res = await fetch('https://flagcdn.com/en/codes.json');
+                if (!res.ok) throw new Error('flagcdn error');
+                return await res.json(); // returns { "ad": "Andorra", ... }
+            } catch (e) {
+                console.warn('FlagCDN failed, using fallback names', e);
+                return {};
+            }
+        }
+
+        // --- main loading sequence (now uses API for codes, flagcdn for names/images)
+        async function loadDashboardData(key) {
+            loginScreen.style.display = 'none';
+            loadingScreen.style.display = 'flex';
+            setStep(1, 'validating API key...');
+
+            username = extractUsernameFromKey(key);
+            apiKey = key;
+
+            // Step 1 & 2 combined: validate and fetch country codes from API
+            setStep(2, 'fetching available countries...');
+            let countryCodes = [];
+            try {
+                countryCodes = await fetchCountryCodesFromAPI(key);
+                if (!countryCodes || countryCodes.length === 0) throw new Error('No countries returned');
+            } catch (e) {
+                loadingScreen.style.display = 'none';
+                loginScreen.style.display = 'flex';
+                alert('API key invalid or no countries available');
+                return false;
+            }
+
+            // Step 3: get full names from flagcdn and build country list
+            setStep(3, 'loading country details...');
+            const flagNameMap = await fetchFlagNameMap();
+
+            // Build countriesFull array using codes from API and names from flagcdn
+            countriesFull = countryCodes.map(code => {
+                const upperCode = code.toUpperCase();
+                const name = flagNameMap[upperCode] || code.toUpperCase();
+                return {
+                    code: code.toLowerCase(),
+                    name: name,
+                    photoUrl: `https://flagcdn.com/w40/${code.toLowerCase()}.png` // use flagcdn image
+                };
+            }).sort((a, b) => a.name.localeCompare(b.name));
+
+            if (!countriesFull.length) {
+                loadingScreen.style.display = 'none';
+                loginScreen.style.display = 'flex';
+                alert('no countries could be loaded');
+                return false;
+            }
+
+            // default selection (bs if exists, else first)
+            if (countriesFull.some(c => c.code === 'bs')) selectedCountryCode = 'bs';
+            else selectedCountryCode = countriesFull[0].code;
+
+            renderDropdown(selectedCountryCode);
+            keyBadgeTrunc.textContent = username;
+            setCookie('batproxy_apikey', key, 7);
+            proxyResultDiv.innerHTML = `<div class="loading-overlay"><div class="spinner"></div> <span>ready · select country & generate</span></div>`;
+
+            loadingScreen.style.display = 'none';
+            dashboard.style.display = 'flex';
+            return true;
+        }
+
+        // --- render dropdown with flag images from flagcdn
         function renderDropdown(selectedCode) {
-            if (!countriesList.length) return;
-            const selected = countriesList.find(c => c.code === selectedCode) || countriesList[0];
+            if (!countriesFull.length) return;
+            const selected = countriesFull.find(c => c.code === selectedCode) || countriesFull[0];
             selectedCountryCode = selected.code;
 
             const html = `
                 <div class="custom-dropdown" id="customDropdown">
                     <div class="dropdown-selected" id="dropdownSelected">
-                        <img src="${selected.photoUrl}" alt="" id="selectedFlag" loading="lazy" onerror="this.src='https://flagcdn.com/w80/${selected.code}.png'">
+                        <img src="${selected.photoUrl}" alt="" id="selectedFlag" loading="lazy">
                         <span id="selectedCountryText">${selected.name} (${selected.code.toUpperCase()})</span>
                     </div>
                     <div class="dropdown-panel hidden" id="dropdownPanel">
@@ -809,12 +827,12 @@
 
             const optionsDiv = document.getElementById('dropdownOptions');
             function renderOptions(filter = '') {
-                const filtered = countriesList.filter(c => 
+                const filtered = countriesFull.filter(c => 
                     c.name.toLowerCase().includes(filter.toLowerCase()) || c.code.includes(filter.toLowerCase())
                 );
                 optionsDiv.innerHTML = filtered.map(c => `
                     <div class="dropdown-option" data-code="${c.code}">
-                        <img src="${c.photoUrl}" alt="" loading="lazy" onerror="this.src='https://flagcdn.com/w80/${c.code}.png'">
+                        <img src="${c.photoUrl}" alt="" loading="lazy">
                         <span>${c.name} (${c.code.toUpperCase()})</span>
                     </div>
                 `).join('');
@@ -837,7 +855,7 @@
                 const option = e.target.closest('.dropdown-option');
                 if (!option) return;
                 const code = option.dataset.code;
-                const newSel = countriesList.find(c => c.code === code);
+                const newSel = countriesFull.find(c => c.code === code);
                 if (newSel) {
                     selectedCountryCode = code;
                     document.getElementById('selectedFlag').src = newSel.photoUrl;
@@ -853,64 +871,12 @@
             });
         }
 
-        // --- main loading sequence
-        async function loadDashboardData(key) {
-            loginScreen.style.display = 'none';
-            loadingScreen.style.display = 'flex';
-            setStep(1, 'validating API key...');
-
-            username = extractUsernameFromKey(key);
-            apiKey = key;
-
-            // step 1: validate (simple fetch to proxy/countries)
-            try {
-                setStep(1, 'contacting proxy API...');
-                const testRes = await fetch(`${BASE_URL}/proxy/countries`, { headers: { 'x-api-key': key } });
-                if (!testRes.ok) throw new Error('invalid key');
-            } catch (e) {
-                loadingScreen.style.display = 'none';
-                loginScreen.style.display = 'flex';
-                alert('API key invalid or network error');
-                return false;
-            }
-
-            // steps 2 & 3: load country data from API + enrich
-            try {
-                countriesList = await loadCountryDataFromAPI(key);
-            } catch (e) {
-                loadingScreen.style.display = 'none';
-                loginScreen.style.display = 'flex';
-                alert('Failed to load country data: ' + e.message);
-                return false;
-            }
-
-            if (!countriesList.length) {
-                loadingScreen.style.display = 'none';
-                loginScreen.style.display = 'flex';
-                alert('No countries available');
-                return false;
-            }
-
-            // default selection: prefer 'bs', otherwise first
-            if (countriesList.some(c => c.code === 'bs')) selectedCountryCode = 'bs';
-            else selectedCountryCode = countriesList[0].code;
-
-            renderDropdown(selectedCountryCode);
-            keyBadgeTrunc.textContent = username;
-            setCookie('batproxy_apikey', key, 7);
-            proxyResultDiv.innerHTML = `<div class="loading-overlay"><div class="spinner"></div> <span>ready · select country & generate</span></div>`;
-
-            loadingScreen.style.display = 'none';
-            dashboard.style.display = 'flex';
-            return true;
-        }
-
         // --- generate proxy
         async function generateProxy() {
             if (!selectedCountryCode) return alert('select a country');
             const port = Math.floor(Math.random() * (49999 - 10000 + 1)) + 10000;
             proxyResultDiv.innerHTML = `<div class="loading-overlay"><div class="spinner"></div> <span>generating proxy …</span></div>`;
-            proxyResultDiv.classList.remove('has-bg');
+            proxyResultDiv.classList.remove('has-bg'); // remove any previous bg
 
             try {
                 const res = await fetch(`${BASE_URL}/generate`, {
@@ -934,8 +900,8 @@
                 const asnOrg = geo?.asn?.organization || '—';
                 const flagUrl = countryCode ? `https://flagcdn.com/w40/${countryCode.toLowerCase()}.png` : '';
 
-                // get photo URL for background from selected country
-                const bgCountry = countriesList.find(c => c.code === selectedCountryCode);
+                // get photo URL for background from selected country (using flagcdn image)
+                const bgCountry = countriesFull.find(c => c.code === selectedCountryCode);
                 const bgUrl = bgCountry ? bgCountry.photoUrl : '';
 
                 proxyResultDiv.innerHTML = `
