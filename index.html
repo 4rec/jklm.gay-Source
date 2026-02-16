@@ -39,7 +39,6 @@
             justify-content: center;
             background: #000000;
             flex-shrink: 0;
-            transition: opacity 0.25s ease;
         }
 
         .login-card {
@@ -48,7 +47,7 @@
             border-radius: 28px;
             padding: 2.5rem 2.2rem;
             width: 420px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.02) inset;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8);
         }
 
         .login-card h1 {
@@ -76,7 +75,6 @@
             font-size: 1rem;
             color: white;
             outline: none;
-            transition: border 0.15s, box-shadow 0.15s;
             margin-bottom: 1.8rem;
         }
 
@@ -87,7 +85,6 @@
 
         .key-input::placeholder {
             color: #3f3f3f;
-            font-weight: 300;
         }
 
         .login-btn {
@@ -100,7 +97,7 @@
             padding: 1rem;
             border-radius: 40px;
             cursor: pointer;
-            transition: background 0.2s, border-color 0.2s;
+            transition: background 0.2s;
             box-shadow: 0 4px 12px rgba(0,0,0,0.6);
         }
 
@@ -116,7 +113,7 @@
             height: 100vh;
             flex-direction: column;
             background: #000000;
-            overflow: hidden; /* no outer scroll */
+            overflow: hidden;
         }
 
         /* header */
@@ -176,14 +173,14 @@
         .main-panel {
             display: flex;
             flex: 1;
-            min-height: 0;  /* flex children can shrink */
+            min-height: 0;
             width: 100%;
             background: #000000;
         }
 
         /* left column: country selector & generate */
         .left-panel {
-            width: 320px;
+            width: 360px;
             background: #0a0a0a;
             border-right: 1px solid #1b1b1b;
             padding: 2rem 1.8rem;
@@ -202,37 +199,118 @@
             font-weight: 500;
         }
 
-        .country-selector {
+        /* ----- custom searchable dropdown with flags ----- */
+        .custom-dropdown {
+            position: relative;
             width: 100%;
-        }
-
-        .dropdown-area {
             background: #111111;
             border: 1px solid #262626;
             border-radius: 18px;
-            padding: 0.5rem;
         }
 
-        #countrySelect {
-            width: 100%;
-            background: #0c0c0c;
-            color: #ececec;
-            border: none;
-            padding: 1rem 0.8rem;
-            border-radius: 14px;
-            font-size: 1rem;
-            outline: none;
+        .dropdown-selected {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 0.9rem 1.2rem;
             cursor: pointer;
+            background: #0c0c0c;
+            border-radius: 18px;
+            border: 1px solid #2e2e2e;
         }
 
-        #countrySelect option {
-            background: #111111;
+        .dropdown-selected img {
+            width: 24px;
+            height: 18px;
+            object-fit: cover;
+            border-radius: 2px;
+            border: 1px solid #3a3a3a;
+        }
+
+        .dropdown-selected span {
+            color: #ececec;
+            font-size: 1rem;
+            flex: 1;
+        }
+
+        .dropdown-selected:after {
+            content: "⌄";
+            color: #6a6a6a;
+            font-size: 1.4rem;
+            line-height: 1;
+        }
+
+        .dropdown-panel {
+            position: absolute;
+            top: calc(100% + 6px);
+            left: 0;
+            width: 100%;
+            background: #151515;
+            border: 1px solid #2e2e2e;
+            border-radius: 18px;
+            z-index: 20;
+            max-height: 300px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 20px 30px rgba(0,0,0,0.9);
+        }
+
+        .dropdown-search {
+            padding: 12px;
+            border-bottom: 1px solid #2a2a2a;
+        }
+
+        .dropdown-search input {
+            width: 100%;
+            background: #1f1f1f;
+            border: 1px solid #3a3a3a;
+            border-radius: 40px;
+            padding: 10px 14px;
+            color: white;
+            font-size: 0.9rem;
+            outline: none;
+        }
+
+        .dropdown-search input::placeholder {
+            color: #5f5f5f;
+        }
+
+        .dropdown-options {
+            overflow-y: auto;
+            max-height: 220px;
+            background: #151515;
+        }
+
+        .dropdown-option {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 16px;
+            cursor: pointer;
+            border-bottom: 1px solid #242424;
+        }
+
+        .dropdown-option:hover {
+            background: #222222;
+        }
+
+        .dropdown-option img {
+            width: 26px;
+            height: 20px;
+            object-fit: cover;
+            border: 1px solid #3d3d3d;
+        }
+
+        .dropdown-option span {
             color: #ddd;
+            font-size: 0.95rem;
         }
 
-        .proxy-options {
-            margin-top: 1.2rem;
+        .hidden {
+            display: none;
         }
+        /* ----- end dropdown ----- */
 
         .info-row {
             display: flex;
@@ -273,59 +351,55 @@
             pointer-events: none;
         }
 
-        /* right panel – IP details, clean and compact */
+        /* right panel – IP details */
         .right-panel {
             flex: 1;
             background: #050505;
-            padding: 2rem 2.2rem;
+            padding: 2rem 2.5rem;
             display: flex;
             flex-direction: column;
-            overflow: hidden;  /* prevents internal scroll */
+            overflow: hidden;
         }
 
         .proxy-result {
             background: #0e0e0e;
             border: 1px solid #202020;
             border-radius: 26px;
-            padding: 2rem 2rem;
+            padding: 2.5rem 2.5rem;
             display: flex;
             flex-direction: column;
             box-shadow: 0 15px 30px rgba(0,0,0,0.8);
             height: fit-content;
         }
 
-        .proxy-host {
-            display: flex;
-            align-items: baseline;
-            gap: 0.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .proxy-ip {
-            font-size: 2.3rem;
+        .proxy-port-large {
+            font-size: 4rem;
             font-weight: 450;
-            letter-spacing: -1px;
+            letter-spacing: -2px;
             color: white;
-            line-height: 1;
+            line-height: 1.1;
+            word-break: break-word;
         }
 
-        .proxy-port {
-            font-size: 2rem;
-            font-weight: 350;
-            color: #6a6a6a;
+        .proxy-ip-small {
+            font-size: 1.4rem;
+            font-weight: 300;
+            color: #8a8a8a;
+            margin-top: 0.25rem;
+            letter-spacing: -0.5px;
         }
 
         .divider-light {
             height: 1px;
             background: #232323;
-            margin: 1.5rem 0 1.8rem 0;
+            margin: 2rem 0 2rem 0;
             width: 100%;
         }
 
         .geo-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 1.5rem 2rem;
+            gap: 1.8rem 2.5rem;
         }
 
         .geo-item {
@@ -345,18 +419,16 @@
             font-size: 1.2rem;
             font-weight: 400;
             color: #e2e2e2;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        .geo-value small {
-            font-size: 0.85rem;
-            color: #8a8a8a;
-            margin-left: 6px;
-        }
-
-        .flag-placeholder {
-            font-size: 1.8rem;
-            line-height: 1;
-            filter: grayscale(30%);
+        .geo-value img.flag-mini {
+            width: 28px;
+            height: 21px;
+            border-radius: 3px;
+            border: 1px solid #3d3d3d;
         }
 
         .loading-overlay {
@@ -365,7 +437,7 @@
             justify-content: center;
             color: #aaa;
             gap: 12px;
-            padding: 2rem;
+            padding: 2.5rem;
         }
 
         .spinner {
@@ -388,7 +460,10 @@
             font-size: 0.9rem;
         }
 
-        .hidden { display: none; }
+        .flag-placeholder {
+            font-size: 1.8rem;
+            filter: grayscale(30%);
+        }
     </style>
 </head>
 <body>
@@ -403,7 +478,7 @@
         </div>
     </div>
 
-    <!-- MAIN DASHBOARD (hidden until key check) -->
+    <!-- MAIN DASHBOARD -->
     <div class="dashboard" id="dashboard">
         <div class="bar">
             <div class="logo">batproxy <span>// secure</span></div>
@@ -414,27 +489,26 @@
         </div>
 
         <div class="main-panel">
-            <!-- left: country & generate -->
+            <!-- left: country selector (custom dropdown) + generate -->
             <div class="left-panel">
-                <div class="country-selector">
+                <div>
                     <div class="section-label">01 · egress</div>
-                    <div class="dropdown-area">
-                        <select id="countrySelect"></select>
-                    </div>
-                    <div class="proxy-options">
-                        <div class="info-row"><span>duration</span><span>6 seconds</span></div>
+                    <!-- custom dropdown container (filled dynamically) -->
+                    <div id="countryDropdownContainer"></div>
+
+                    <div style="margin-top: 1.5rem;">
+                        <div class="info-row"><span>duration</span><span>6 minutes</span></div>
                         <div class="info-row"><span>port range</span><span>10000–49999</span></div>
                     </div>
+
                     <button class="generate-btn" id="generateBtn">generate proxy</button>
                 </div>
-                <!-- tiny hint, stays on screen -->
-                <div style="margin-top: auto; font-size:0.7rem; color:#303030; text-align:center;">session · encrypted</div>
+                <div style="margin-top: auto; font-size:0.7rem; color:#303030; text-align:center;">decodo · outbound</div>
             </div>
 
-            <!-- right: live ip & geo -->
+            <!-- right: live proxy + ip details -->
             <div class="right-panel" id="rightPanel">
                 <div class="proxy-result" id="proxyResult">
-                    <!-- will be filled dynamically -->
                     <div class="loading-overlay" id="initialLoader">
                         <div class="spinner"></div> <span>awaiting generation</span>
                     </div>
@@ -456,15 +530,16 @@
         const apiKeyInput = document.getElementById('apiKeyInput');
         const loginBtn = document.getElementById('loginBtn');
         const keyBadgeTrunc = document.getElementById('truncatedKey');
-        const countrySelect = document.getElementById('countrySelect');
         const generateBtn = document.getElementById('generateBtn');
         const proxyResultDiv = document.getElementById('proxyResult');
-        const rightPanel = document.getElementById('rightPanel');
+        const dropdownContainer = document.getElementById('countryDropdownContainer');
 
         // state
         let apiKey = '';
-        let countriesAvailable = [];      // array of country codes from api
-        let countryNameMap = new Map();   // code -> full name (from flagcdn)
+        let countriesAvailable = [];               // raw country codes from api
+        let countryNameMap = new Map();             // code -> full name (flagcdn)
+        let countriesFull = [];                      // { code, name }
+        let selectedCountryCode = 'bs';              // default fallback
 
         // --- cookie helpers
         function setCookie(name, value, days) {
@@ -486,7 +561,6 @@
                 countryNameMap = new Map(Object.entries(data));
             } catch (e) {
                 console.warn('flagcdn failed, using fallback');
-                // minimal fallback (just codes)
             }
         }
 
@@ -498,7 +572,6 @@
                 });
                 if (!res.ok) throw new Error(`countries fetch ${res.status}`);
                 const json = await res.json();
-                // expected: { countries: ["ca","bm",...] }
                 return json.countries || [];
             } catch (err) {
                 console.error(err);
@@ -506,104 +579,131 @@
             }
         }
 
-        // --- populate dropdown with codes and full names (if available)
-        function populateDropdown(countryCodes) {
-            countrySelect.innerHTML = '';
-            if (!countryCodes.length) {
-                const option = document.createElement('option');
-                option.textContent = 'no countries loaded';
-                option.disabled = true;
-                countrySelect.appendChild(option);
-                return;
-            }
-            // sort alphabetically by full name if possible
-            const enriched = countryCodes.map(code => {
-                const name = countryNameMap.get(code) || code.toUpperCase();
-                return { code, name };
-            }).sort((a, b) => a.name.localeCompare(b.name));
-
-            for (const { code, name } of enriched) {
-                const option = document.createElement('option');
-                option.value = code;
-                option.textContent = `${name} (${code.toUpperCase()})`;
-                countrySelect.appendChild(option);
-            }
-            // set default to BS if present
-            if (countryCodes.includes('bs')) countrySelect.value = 'bs';
-        }
-
-        // --- display initial empty state in right panel
-        function renderEmptyState() {
-            proxyResultDiv.innerHTML = `
-                <div class="loading-overlay">
-                    <div class="spinner"></div> <span>ready · select country & generate</span>
-                </div>
-            `;
-        }
-
-        // --- display generated proxy + ip info
-        async function displayGeneratedProxy(proxyData) {
-            // proxyData: { duration, ip, port, success } (success should be true)
-            if (!proxyData || !proxyData.success || !proxyData.ip) {
-                proxyResultDiv.innerHTML = `<div class="error-message">invalid proxy response</div>`;
+        // --- render custom searchable dropdown with flags
+        function renderDropdown(selectedCode = 'bs') {
+            if (!countriesFull.length) {
+                dropdownContainer.innerHTML = `<div class="custom-dropdown"><div class="dropdown-selected"><span>no countries</span></div></div>`;
                 return;
             }
 
-            // fetch ip lookup
-            let geo = null;
-            try {
-                const lookupRes = await fetch(`https://nyanc4tt.xyz/api/iplookup?ip=${proxyData.ip}`);
-                if (lookupRes.ok) geo = await lookupRes.json();
-            } catch (e) {
-                console.warn('geo lookup failed');
-            }
-
-            // fallback if geo missing
-            const country = geo?.country || '—';
-            const countryCode = geo?.country_code || '';
-            const isp = geo?.isp || '—';
-            const city = geo?.city || '—';
-            const region = geo?.region || '—';
-            const flagEmoji = geo?.flag_emoji || '';
-
-            // build result html (professional, minimal emoji)
-            proxyResultDiv.innerHTML = `
-                <div class="proxy-host">
-                    <span class="proxy-ip">${proxyData.ip}</span>
-                    <span class="proxy-port">:${proxyData.port}</span>
-                </div>
-                <div class="divider-light"></div>
-                <div class="geo-grid">
-                    <div class="geo-item">
-                        <span class="geo-label">country</span>
-                        <span class="geo-value">${country} <small>${countryCode}</small></span>
+            const html = `
+                <div class="custom-dropdown" id="customDropdown">
+                    <div class="dropdown-selected" id="dropdownSelected">
+                        <img src="https://flagcdn.com/w40/${selectedCode}.png" alt="" id="selectedFlag">
+                        <span id="selectedCountryText">${getCountryName(selectedCode)} (${selectedCode.toUpperCase()})</span>
                     </div>
-                    <div class="geo-item">
-                        <span class="geo-label">isp</span>
-                        <span class="geo-value">${isp}</span>
-                    </div>
-                    <div class="geo-item">
-                        <span class="geo-label">city / region</span>
-                        <span class="geo-value">${city} <small>${region}</small></span>
-                    </div>
-                    <div class="geo-item">
-                        <span class="geo-label">duration</span>
-                        <span class="geo-value">6 sec</span>
+                    <div class="dropdown-panel hidden" id="dropdownPanel">
+                        <div class="dropdown-search">
+                            <input type="text" id="dropdownSearch" placeholder="search country..." autocomplete="off">
+                        </div>
+                        <div class="dropdown-options" id="dropdownOptions"></div>
                     </div>
                 </div>
             `;
+            dropdownContainer.innerHTML = html;
+
+            // populate options
+            const optionsDiv = document.getElementById('dropdownOptions');
+            function renderOptions(filter = '') {
+                const filtered = countriesFull.filter(c => 
+                    c.name.toLowerCase().includes(filter.toLowerCase()) || 
+                    c.code.includes(filter.toLowerCase())
+                );
+                optionsDiv.innerHTML = filtered.map(c => `
+                    <div class="dropdown-option" data-code="${c.code}">
+                        <img src="https://flagcdn.com/w40/${c.code}.png" alt="" loading="lazy">
+                        <span>${c.name} (${c.code.toUpperCase()})</span>
+                    </div>
+                `).join('');
+            }
+            renderOptions('');
+
+            // event listeners
+            const selectedDiv = document.getElementById('dropdownSelected');
+            const panel = document.getElementById('dropdownPanel');
+            const searchInput = document.getElementById('dropdownSearch');
+
+            selectedDiv.addEventListener('click', (e) => {
+                e.stopPropagation();
+                panel.classList.toggle('hidden');
+                if (!panel.classList.contains('hidden')) searchInput.focus();
+            });
+
+            searchInput.addEventListener('input', (e) => {
+                renderOptions(e.target.value);
+            });
+
+            // option click
+            optionsDiv.addEventListener('click', (e) => {
+                const option = e.target.closest('.dropdown-option');
+                if (!option) return;
+                const code = option.dataset.code;
+                selectedCountryCode = code;
+                // update selected area
+                document.getElementById('selectedFlag').src = `https://flagcdn.com/w40/${code}.png`;
+                document.getElementById('selectedCountryText').innerText = `${getCountryName(code)} (${code.toUpperCase()})`;
+                panel.classList.add('hidden');
+            });
+
+            // close when clicking outside
+            document.addEventListener('click', function closeDropdown(e) {
+                if (!document.getElementById('customDropdown')?.contains(e.target)) {
+                    if (panel) panel.classList.add('hidden');
+                }
+            });
         }
 
-        // --- generate proxy call
+        // helper to get full name
+        function getCountryName(code) {
+            const found = countriesFull.find(c => c.code === code);
+            return found ? found.name : code.toUpperCase();
+        }
+
+        // --- load data after login
+        async function finalizeLogin(key) {
+            apiKey = key;
+            const codes = await fetchCountries(apiKey);
+            if (!codes.length) {
+                alert('api key invalid or no countries');
+                return false;
+            }
+            countriesAvailable = codes;
+
+            // build full list with names
+            countriesFull = countriesAvailable.map(code => ({
+                code,
+                name: countryNameMap.get(code) || code.toUpperCase()
+            })).sort((a,b) => a.name.localeCompare(b.name));
+
+            // set default selection (BS if exists else first)
+            if (countriesFull.some(c => c.code === 'bs')) selectedCountryCode = 'bs';
+            else if (countriesFull.length) selectedCountryCode = countriesFull[0].code;
+
+            // render dropdown
+            renderDropdown(selectedCountryCode);
+
+            // update badge
+            const showKey = apiKey.length > 12 ? apiKey.substring(0,4) + '…' + apiKey.slice(-4) : apiKey;
+            keyBadgeTrunc.textContent = showKey;
+
+            // switch UI
+            loginScreen.style.display = 'none';
+            dashboard.style.display = 'flex';
+
+            // empty state
+            proxyResultDiv.innerHTML = `<div class="loading-overlay"><div class="spinner"></div> <span>ready · select country & generate</span></div>`;
+
+            setCookie('batproxy_apikey', apiKey, 7);
+            return true;
+        }
+
+        // --- generate proxy
         async function generateProxy() {
-            const selectedCountry = countrySelect.value;
-            if (!selectedCountry) {
+            if (!selectedCountryCode) {
                 alert('select a country');
                 return;
             }
             const port = Math.floor(Math.random() * (49999 - 10000 + 1)) + 10000;
-
-            // show loading inside right panel
             proxyResultDiv.innerHTML = `<div class="loading-overlay"><div class="spinner"></div> <span>generating proxy …</span></div>`;
 
             try {
@@ -615,71 +715,80 @@
                     },
                     body: JSON.stringify({
                         port: port,
-                        countrycode: selectedCountry,
-                        duration: 6   // as required: '6'
+                        countrycode: selectedCountryCode,
+                        duration: 6      // 6 minutes
                     })
                 });
                 const data = await res.json();
-                if (!res.ok || !data.success) {
-                    throw new Error(data.message || 'proxy generation failed');
-                }
-                await displayGeneratedProxy(data);
+                if (!res.ok || !data.success) throw new Error(data.message || 'generation failed');
+
+                // fetch ip details from maxmind api
+                const ip = data.ip;
+                let geo = null;
+                try {
+                    const geoRes = await fetch(`https://maxmind.api.iii.vg/?ip=${ip}`);
+                    if (geoRes.ok) geo = await geoRes.json();
+                } catch (ge) { /* ignore */ }
+
+                // build display: PORT big, IP small
+                let countryName = geo?.country?.name || '—';
+                let countryCode = geo?.country?.iso_code || '';
+                let cityName = geo?.city?.name || '—';
+                let asnOrg = geo?.asn?.organization || '—';
+                let flagUrl = countryCode ? `https://flagcdn.com/w40/${countryCode.toLowerCase()}.png` : '';
+
+                proxyResultDiv.innerHTML = `
+                    <div class="proxy-port-large">${data.port}</div>
+                    <div class="proxy-ip-small">${data.ip}</div>
+                    <div class="divider-light"></div>
+                    <div class="geo-grid">
+                        <div class="geo-item">
+                            <span class="geo-label">country</span>
+                            <span class="geo-value">
+                                ${flagUrl ? `<img src="${flagUrl}" class="flag-mini" alt="">` : ''}
+                                ${countryName} <small>${countryCode}</small>
+                            </span>
+                        </div>
+                        <div class="geo-item">
+                            <span class="geo-label">ISP / ASN</span>
+                            <span class="geo-value">${asnOrg}</span>
+                        </div>
+                        <div class="geo-item">
+                            <span class="geo-label">city</span>
+                            <span class="geo-value">${cityName}</span>
+                        </div>
+                        <div class="geo-item">
+                            <span class="geo-label">duration</span>
+                            <span class="geo-value">6 minutes</span>
+                        </div>
+                    </div>
+                `;
             } catch (err) {
                 proxyResultDiv.innerHTML = `<div class="error-message">error: ${err.message}</div>`;
             }
         }
 
-        // --- login / init sequence
-        async function attemptLogin(inputKey) {
-            if (!inputKey) return false;
-            apiKey = inputKey;
+        // --- login click
+        loginBtn.addEventListener('click', async () => {
+            const key = apiKeyInput.value.trim();
+            if (!key) return alert('enter api key');
+            await finalizeLogin(key);
+        });
 
-            // show loading on login card? we just simulate.
-            try {
-                // try to fetch countries using key (validates key implicitly)
-                const codes = await fetchCountries(apiKey);
-                if (!codes || codes.length === 0) {
-                    alert('invalid api key or no countries returned');
-                    return false;
-                }
-                countriesAvailable = codes;
+        apiKeyInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') loginBtn.click();
+        });
 
-                // load flag mapping (if not yet)
-                if (countryNameMap.size === 0) await loadFlagMapping();
+        generateBtn.addEventListener('click', generateProxy);
 
-                // populate dropdown
-                populateDropdown(countriesAvailable);
-
-                // store api key in cookie
-                setCookie('batproxy_apikey', apiKey, 7);
-
-                // update badge
-                const showKey = apiKey.length > 12 ? apiKey.substring(0, 4) + '…' + apiKey.slice(-4) : apiKey;
-                keyBadgeTrunc.textContent = showKey;
-
-                // switch UI
-                loginScreen.style.display = 'none';
-                dashboard.style.display = 'flex';
-
-                // empty state on right
-                renderEmptyState();
-
-                return true;
-            } catch (e) {
-                alert('login failed: ' + e.message);
-                return false;
-            }
-        }
-
-        // --- check cookie on load
+        // --- bootstrap: check cookie & preload flag map
         async function bootstrap() {
+            await loadFlagMapping(); // preload names
             const cookieKey = getCookie('batproxy_apikey');
             if (cookieKey) {
                 apiKeyInput.value = cookieKey;
-                // attempt silent login
-                const success = await attemptLogin(cookieKey);
+                const success = await finalizeLogin(cookieKey);
                 if (!success) {
-                    // if fails, show login screen normally
                     loginScreen.style.display = 'flex';
                     dashboard.style.display = 'none';
                 }
@@ -689,25 +798,7 @@
             }
         }
 
-        // --- event listeners
-        loginBtn.addEventListener('click', async () => {
-            const key = apiKeyInput.value.trim();
-            if (!key) return alert('enter api key');
-            await attemptLogin(key);
-        });
-
-        // allow enter in input
-        apiKeyInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') loginBtn.click();
-        });
-
-        generateBtn.addEventListener('click', generateProxy);
-
-        // start the app
         bootstrap();
-
-        // (optional) preload flag mapping in background anyway
-        loadFlagMapping().catch(()=>{});
     })();
 </script>
 </body>
