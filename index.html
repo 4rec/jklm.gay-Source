@@ -4,11 +4,13 @@
     <title>Proxy API Tester</title>
     <style>
         body { font-family: Arial; padding: 20px; max-width: 800px; margin: 0 auto; }
-        input, button { padding: 8px; margin: 5px 0; width: 100%; }
+        input, button, select { padding: 8px; margin: 5px 0; width: 100%; }
         .card { border: 1px solid #ccc; padding: 15px; margin: 15px 0; border-radius: 5px; }
         .response { background: #f4f4f4; padding: 10px; border-radius: 3px; font-family: monospace; white-space: pre-wrap; }
         .error { color: red; }
         .success { color: green; }
+        .row { display: flex; gap: 10px; }
+        .row input { flex: 1; }
     </style>
 </head>
 <body>
@@ -48,7 +50,16 @@
     </div>
 
     <div class="card">
-        <h3>5. Generate Proxy</h3>
+        <h3>5. Check Port</h3>
+        <div class="row">
+            <input type="number" id="checkPort" placeholder="Port number" value="10001" min="1" max="65535">
+        </div>
+        <button onclick="testCheckPort()">POST /checkport</button>
+        <div id="checkPortResponse" class="response"></div>
+    </div>
+
+    <div class="card">
+        <h3>6. Generate Proxy</h3>
         <p>Port: random 10001-49999 | Country: BS</p>
         <button onclick="testGenerateProxy()">POST /generate</button>
         <div id="proxyResponse" class="response"></div>
@@ -118,10 +129,20 @@
             });
             displayResponse('generateResponse', result);
             
-            // If successful, update the main API key field
             if (result.ok && result.data.apikey) {
                 document.getElementById('apiKey').value = result.data.apikey;
             }
+        }
+
+        async function testCheckPort() {
+            const port = document.getElementById('checkPort').value;
+            
+            const result = await apiCall('/checkport', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ port: parseInt(port) })
+            });
+            displayResponse('checkPortResponse', result);
         }
 
         async function testGenerateProxy() {
@@ -137,13 +158,12 @@
                 body: JSON.stringify({
                     port: port,
                     countrycode: 'BS',
-                    duration: 6
+                    duration: 300
                 })
             });
             displayResponse('proxyResponse', result);
         }
 
-        // Set default master key hint
         document.getElementById('masterKey').placeholder = 'Enter master key from code';
     </script>
 </body>
