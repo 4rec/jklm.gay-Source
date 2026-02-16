@@ -110,6 +110,87 @@
             pointer-events: none;
         }
 
+        /* LOADING SCREEN (full screen, steps) */
+        .loading-screen {
+            display: none;
+            width: 100%;
+            height: 100vh;
+            background: #000000;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .loading-card {
+            background: #0f0f0f;
+            border: 1px solid #242424;
+            border-radius: 42px;
+            padding: 3rem 3.5rem;
+            width: 500px;
+            text-align: center;
+            box-shadow: 0 25px 50px rgba(0,0,0,1);
+        }
+
+        .loading-title {
+            font-size: 1.8rem;
+            font-weight: 400;
+            color: white;
+            margin-bottom: 2.5rem;
+        }
+
+        .step-container {
+            text-align: left;
+            margin: 2rem 0 1.5rem 0;
+        }
+
+        .step-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.9rem 1rem;
+            border-bottom: 1px solid #202020;
+            color: #aaa;
+        }
+
+        .step-item.active {
+            color: white;
+            background: #181818;
+            border-radius: 40px;
+        }
+
+        .step-indicator {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #232323;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+        }
+
+        .step-item.active .step-indicator {
+            background: #3b3b3b;
+            box-shadow: 0 0 0 2px #4f4f4f;
+        }
+
+        .step-spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #3a3a3a;
+            border-top: 2px solid #ccc;
+            border-radius: 50%;
+            animation: spin 1s infinite linear;
+            margin-left: auto;
+        }
+
+        .loader-message {
+            color: #7a7a7a;
+            font-size: 0.9rem;
+            margin-top: 1rem;
+        }
+
         /* DASHBOARD */
         .dashboard {
             display: none;
@@ -180,7 +261,7 @@
         }
 
         .left-panel {
-            width: 380px;
+            width: 400px;
             background: #0a0a0a;
             border-right: 1px solid #1b1b1b;
             padding: 2rem 1.8rem;
@@ -188,6 +269,8 @@
             flex-direction: column;
             gap: 2rem;
             flex-shrink: 0;
+            position: relative;
+            z-index: 2;
         }
 
         .section-label {
@@ -199,7 +282,7 @@
             font-weight: 500;
         }
 
-        /* custom dropdown */
+        /* country dropdown */
         .custom-dropdown {
             position: relative;
             width: 100%;
@@ -346,11 +429,6 @@
             border-color: #4b4b4b;
         }
 
-        .generate-btn:disabled {
-            opacity: 0.3;
-            pointer-events: none;
-        }
-
         .right-panel {
             flex: 1;
             background: #050505;
@@ -358,17 +436,37 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            position: relative;
+        }
+
+        /* subtle country photo background */
+        .country-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center 30%;
+            opacity: 0.12;
+            filter: grayscale(80%) brightness(0.3);
+            transition: background-image 0.3s ease;
+            pointer-events: none;
+            z-index: 0;
         }
 
         .proxy-result {
-            background: #0e0e0e;
-            border: 1px solid #202020;
+            background: rgba(14, 14, 14, 0.85);
+            backdrop-filter: blur(2px);
+            border: 1px solid #303030;
             border-radius: 26px;
             padding: 2.5rem 2.5rem;
             display: flex;
             flex-direction: column;
             box-shadow: 0 15px 30px rgba(0,0,0,0.8);
             height: fit-content;
+            position: relative;
+            z-index: 1;
         }
 
         .proxy-port-large {
@@ -383,14 +481,14 @@
         .proxy-ip-small {
             font-size: 1.4rem;
             font-weight: 300;
-            color: #8a8a8a;
+            color: #b0b0b0;
             margin-top: 0.25rem;
             letter-spacing: -0.5px;
         }
 
         .divider-light {
             height: 1px;
-            background: #232323;
+            background: #2e2e2e;
             margin: 2rem 0 2rem 0;
             width: 100%;
         }
@@ -410,14 +508,14 @@
         .geo-label {
             font-size: 0.7rem;
             text-transform: uppercase;
-            color: #5e5e5e;
+            color: #8f8f8f;
             font-weight: 500;
         }
 
         .geo-value {
             font-size: 1.2rem;
             font-weight: 400;
-            color: #e2e2e2;
+            color: #f0f0f0;
             display: flex;
             align-items: center;
             gap: 8px;
@@ -458,18 +556,6 @@
             border-radius: 40px;
             font-size: 0.9rem;
         }
-
-        /* loading state for login check */
-        .loader-mini {
-            display: inline-block;
-            width: 14px;
-            height: 14px;
-            border: 2px solid #3a3a3a;
-            border-top: 2px solid #aaa;
-            border-radius: 50%;
-            animation: spin 1s infinite linear;
-            margin-right: 8px;
-        }
     </style>
 </head>
 <body>
@@ -484,13 +570,38 @@
         </div>
     </div>
 
-    <!-- MAIN DASHBOARD -->
+    <!-- FULL SCREEN LOADING WITH STEPS -->
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loading-card">
+            <div class="loading-title">establishing session</div>
+            <div class="step-container">
+                <div class="step-item" id="step1">
+                    <span class="step-indicator">1</span>
+                    <span>validating API key</span>
+                    <span class="step-spinner" id="spinner1"></span>
+                </div>
+                <div class="step-item" id="step2">
+                    <span class="step-indicator">2</span>
+                    <span>fetching country list</span>
+                    <span class="step-spinner" id="spinner2" style="display:none;"></span>
+                </div>
+                <div class="step-item" id="step3">
+                    <span class="step-indicator">3</span>
+                    <span>loading country images</span>
+                    <span class="step-spinner" id="spinner3" style="display:none;"></span>
+                </div>
+            </div>
+            <div class="loader-message" id="loadingMessage">initializing...</div>
+        </div>
+    </div>
+
+    <!-- DASHBOARD -->
     <div class="dashboard" id="dashboard">
         <div class="bar">
             <div class="logo">batproxy <span>// secure</span></div>
             <div class="key-badge" id="keyBadge">
                 <span class="dot"></span>
-                <span class="key-trunc" id="truncatedKey">loading...</span>
+                <span class="key-trunc" id="truncatedKey">user</span>
             </div>
         </div>
 
@@ -511,6 +622,8 @@
             </div>
 
             <div class="right-panel" id="rightPanel">
+                <!-- subtle dynamic background for country photo -->
+                <div class="country-bg" id="countryBg" style="background-image: url('');"></div>
                 <div class="proxy-result" id="proxyResult">
                     <div class="loading-overlay" id="initialLoader">
                         <div class="spinner"></div> <span>awaiting generation</span>
@@ -523,37 +636,46 @@
 
 <script>
     (function() {
-        // --- config
+        // config
         const BASE_URL = 'https://proxy-api-zeta.vercel.app';
-        const CSV_URL = 'https://jklm.gay/list.csv';  // your CSV file
+        const CSV_URL = 'https://jklm.gay/list.csv';
 
-        // DOM elements
+        // screens
         const loginScreen = document.getElementById('loginScreen');
+        const loadingScreen = document.getElementById('loadingScreen');
         const dashboard = document.getElementById('dashboard');
+
+        // elements
         const apiKeyInput = document.getElementById('apiKeyInput');
         const loginBtn = document.getElementById('loginBtn');
         const keyBadgeTrunc = document.getElementById('truncatedKey');
         const generateBtn = document.getElementById('generateBtn');
         const proxyResultDiv = document.getElementById('proxyResult');
         const dropdownContainer = document.getElementById('countryDropdownContainer');
+        const countryBg = document.getElementById('countryBg');
+
+        // step elements
+        const step1 = document.getElementById('step1');
+        const step2 = document.getElementById('step2');
+        const step3 = document.getElementById('step3');
+        const spinner1 = document.getElementById('spinner1');
+        const spinner2 = document.getElementById('spinner2');
+        const spinner3 = document.getElementById('spinner3');
+        const loadingMessage = document.getElementById('loadingMessage');
 
         // state
         let apiKey = '';
         let username = 'user';
-        let countriesFull = [];          // from CSV: { code, name, photoUrl }
+        let countriesFull = [];          // { code, name, photoUrl }
         let selectedCountryCode = 'bs';
 
-        // --- helper: decode base64 api key to extract username
+        // --- helper: decode base64 api key to username
         function extractUsernameFromKey(key) {
             try {
                 const decoded = atob(key);
-                // expected format: u-<username>-k-<64 hex>
                 const match = decoded.match(/^u-(.+?)-k-/);
-                if (match && match[1]) return match[1];
-                return 'user';
-            } catch (e) {
-                return 'user';
-            }
+                return (match && match[1]) ? match[1] : 'user';
+            } catch { return 'user'; }
         }
 
         // --- cookie helpers
@@ -567,22 +689,35 @@
             return match ? match[2] : null;
         }
 
-        // --- fetch and parse CSV from jklm.gay/list.csv
+        // --- update step UI
+        function setStep(step, message) {
+            [step1, step2, step3].forEach(s => s.classList.remove('active'));
+            if (step === 1) step1.classList.add('active');
+            if (step === 2) step2.classList.add('active');
+            if (step === 3) step3.classList.add('active');
+            loadingMessage.innerText = message;
+
+            // spinner visibility
+            spinner1.style.display = step === 1 ? 'block' : 'none';
+            spinner2.style.display = step === 2 ? 'block' : 'none';
+            spinner3.style.display = step === 3 ? 'block' : 'none';
+        }
+
+        // --- fetch and parse CSV
         async function fetchCountryListFromCSV() {
             try {
                 const response = await fetch(CSV_URL);
                 if (!response.ok) throw new Error('CSV fetch failed');
                 const csvText = await response.text();
-                const lines = csvText.split('\n').filter(line => line.trim() !== '');
+                const lines = csvText.split('\n').filter(l => l.trim());
                 const headers = lines[0].split(',').map(h => h.trim());
                 const nameIdx = headers.indexOf('English short name');
                 const codeIdx = headers.indexOf('Alpha-2 code');
                 const photoIdx = headers.indexOf('PhotoUrl');
-                if (nameIdx === -1 || codeIdx === -1 || photoIdx === -1) throw new Error('CSV format mismatch');
+                if (nameIdx === -1 || codeIdx === -1 || photoIdx === -1) throw new Error('CSV format');
 
                 const countries = [];
                 for (let i = 1; i < lines.length; i++) {
-                    // naive CSV parse (handles quotes loosely)
                     const parts = lines[i].match(/(".*?"|[^,]+)(?=\s*,|\s*$)/g) || [];
                     const clean = parts.map(p => p.replace(/^"|"$/g, '').trim());
                     if (clean.length <= Math.max(nameIdx, codeIdx, photoIdx)) continue;
@@ -595,31 +730,29 @@
                 }
                 return countries;
             } catch (e) {
-                console.warn('CSV fetch failed, using fallback flagcdn', e);
-                // fallback: generate from flagcdn codes (without custom photos)
+                console.warn('CSV failed, fallback flagcdn', e);
+                // fallback to flagcdn
                 try {
                     const flagRes = await fetch('https://flagcdn.com/en/codes.json');
                     const flagData = await flagRes.json();
                     return Object.entries(flagData).map(([code, name]) => ({
                         code: code.toLowerCase(),
                         name,
-                        photoUrl: `https://flagcdn.com/w80/${code.toLowerCase()}.png` // fallback flag
+                        photoUrl: `https://flagcdn.com/w80/${code.toLowerCase()}.png`
                     }));
-                } catch (err) {
+                } catch {
                     return [];
                 }
             }
         }
 
-        // --- render custom dropdown with country photos
+        // --- render dropdown & set background
         function renderDropdown(selectedCode) {
-            if (!countriesFull.length) {
-                dropdownContainer.innerHTML = `<div class="custom-dropdown"><div class="dropdown-selected"><span>no countries</span></div></div>`;
-                return;
-            }
-
+            if (!countriesFull.length) return;
             const selected = countriesFull.find(c => c.code === selectedCode) || countriesFull[0];
             selectedCountryCode = selected.code;
+            // update background image
+            countryBg.style.backgroundImage = `url('${selected.photoUrl}')`;
 
             const html = `
                 <div class="custom-dropdown" id="customDropdown">
@@ -640,8 +773,7 @@
             const optionsDiv = document.getElementById('dropdownOptions');
             function renderOptions(filter = '') {
                 const filtered = countriesFull.filter(c => 
-                    c.name.toLowerCase().includes(filter.toLowerCase()) || 
-                    c.code.includes(filter.toLowerCase())
+                    c.name.toLowerCase().includes(filter.toLowerCase()) || c.code.includes(filter.toLowerCase())
                 );
                 optionsDiv.innerHTML = filtered.map(c => `
                     <div class="dropdown-option" data-code="${c.code}">
@@ -662,9 +794,7 @@
                 if (!panel.classList.contains('hidden')) searchInput.focus();
             });
 
-            searchInput.addEventListener('input', (e) => {
-                renderOptions(e.target.value);
-            });
+            searchInput.addEventListener('input', (e) => renderOptions(e.target.value));
 
             optionsDiv.addEventListener('click', (e) => {
                 const option = e.target.closest('.dropdown-option');
@@ -676,100 +806,100 @@
                     document.getElementById('selectedFlag').src = newSel.photoUrl;
                     document.getElementById('selectedCountryText').innerText = `${newSel.name} (${code.toUpperCase()})`;
                     panel.classList.add('hidden');
+                    // update background
+                    countryBg.style.backgroundImage = `url('${newSel.photoUrl}')`;
                 }
             });
 
-            document.addEventListener('click', function closeDropdown(e) {
+            document.addEventListener('click', (e) => {
                 if (!document.getElementById('customDropdown')?.contains(e.target)) {
                     if (panel) panel.classList.add('hidden');
                 }
             });
         }
 
-        // --- load initial data after login (countries, then dropdown)
+        // --- main loading sequence
         async function loadDashboardData(key) {
-            // show loading state on login button
-            loginBtn.innerHTML = '<span class="loader-mini"></span> validating';
-            loginBtn.disabled = true;
+            // show loading screen
+            loginScreen.style.display = 'none';
+            loadingScreen.style.display = 'flex';
+            setStep(1, 'validating API key...');
 
-            // extract username
             username = extractUsernameFromKey(key);
             apiKey = key;
 
-            // fetch country list from CSV
-            const csvCountries = await fetchCountryListFromCSV();
-            if (csvCountries.length) {
-                countriesFull = csvCountries.sort((a,b) => a.name.localeCompare(b.name));
-            } else {
-                // ultimate fallback: just use codes from proxy? but proxy gives limited set.
-                // we'll show a minimal set from proxy + flagcdn
-                try {
-                    const proxyCodes = await fetch(`${BASE_URL}/proxy/countries`, { headers: { 'x-api-key': key } });
-                    const proxyJson = await proxyCodes.json();
-                    const codes = proxyJson.countries || [];
-                    const flagRes = await fetch('https://flagcdn.com/en/codes.json');
-                    const flagData = await flagRes.json();
-                    countriesFull = codes.map(code => ({
-                        code: code.toLowerCase(),
-                        name: flagData[code.toUpperCase()] || code.toUpperCase(),
-                        photoUrl: `https://flagcdn.com/w80/${code.toLowerCase()}.png`
-                    })).sort((a,b) => a.name.localeCompare(b.name));
-                } catch (e) {
-                    proxyResultDiv.innerHTML = `<div class="error-message">failed to load countries</div>`;
-                    loginBtn.innerHTML = '→ access panel';
-                    loginBtn.disabled = false;
-                    return false;
-                }
-            }
-
-            if (!countriesFull.length) {
-                proxyResultDiv.innerHTML = `<div class="error-message">no countries available</div>`;
-                loginBtn.innerHTML = '→ access panel';
-                loginBtn.disabled = false;
+            // step 1: validate key by fetching proxy countries (minimal call)
+            try {
+                setStep(1, 'contacting proxy API...');
+                const testRes = await fetch(`${BASE_URL}/proxy/countries`, { headers: { 'x-api-key': key } });
+                if (!testRes.ok) throw new Error('invalid key');
+                const proxyJson = await testRes.json();
+                const proxyCodes = proxyJson.countries || [];
+                if (!proxyCodes.length) throw new Error('no countries');
+            } catch (e) {
+                loadingScreen.style.display = 'none';
+                loginScreen.style.display = 'flex';
+                alert('API key invalid or network error');
                 return false;
             }
 
-            // set default selection (bs if present)
+            // step 2: fetch CSV list
+            setStep(2, 'downloading country catalog...');
+            let csvCountries = await fetchCountryListFromCSV();
+
+            // step 3: load images (just mapping, images load lazily)
+            setStep(3, 'preparing country data...');
+            if (csvCountries.length) {
+                countriesFull = csvCountries.sort((a,b) => a.name.localeCompare(b.name));
+            } else {
+                // fallback: use proxy codes + flagcdn
+                const flagRes = await fetch('https://flagcdn.com/en/codes.json');
+                const flagData = await flagRes.json();
+                const proxyRes = await fetch(`${BASE_URL}/proxy/countries`, { headers: { 'x-api-key': key } });
+                const proxyJson = await proxyRes.json();
+                const codes = proxyJson.countries || [];
+                countriesFull = codes.map(code => ({
+                    code: code.toLowerCase(),
+                    name: flagData[code.toUpperCase()] || code.toUpperCase(),
+                    photoUrl: `https://flagcdn.com/w80/${code.toLowerCase()}.png`
+                })).sort((a,b) => a.name.localeCompare(b.name));
+            }
+
+            if (!countriesFull.length) {
+                loadingScreen.style.display = 'none';
+                loginScreen.style.display = 'flex';
+                alert('no countries available');
+                return false;
+            }
+
+            // set default selection
             if (countriesFull.some(c => c.code === 'bs')) selectedCountryCode = 'bs';
             else selectedCountryCode = countriesFull[0].code;
 
             renderDropdown(selectedCountryCode);
-            keyBadgeTrunc.textContent = username;   // show username
+            keyBadgeTrunc.textContent = username;
 
-            // switch UI
-            loginScreen.style.display = 'none';
-            dashboard.style.display = 'flex';
-
-            // empty state
+            // finalize
+            setCookie('batproxy_apikey', key, 7);
             proxyResultDiv.innerHTML = `<div class="loading-overlay"><div class="spinner"></div> <span>ready · select country & generate</span></div>`;
 
-            setCookie('batproxy_apikey', key, 7);
-            loginBtn.innerHTML = '→ access panel';  // reset
-            loginBtn.disabled = false;
+            // switch to dashboard
+            loadingScreen.style.display = 'none';
+            dashboard.style.display = 'flex';
             return true;
         }
 
-        // --- generate proxy (unchanged logic but uses selectedCountryCode)
+        // --- generate proxy
         async function generateProxy() {
-            if (!selectedCountryCode) {
-                alert('select a country');
-                return;
-            }
+            if (!selectedCountryCode) return alert('select a country');
             const port = Math.floor(Math.random() * (49999 - 10000 + 1)) + 10000;
             proxyResultDiv.innerHTML = `<div class="loading-overlay"><div class="spinner"></div> <span>generating proxy …</span></div>`;
 
             try {
                 const res = await fetch(`${BASE_URL}/generate`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'x-api-key': apiKey
-                    },
-                    body: JSON.stringify({
-                        port: port,
-                        countrycode: selectedCountryCode,
-                        duration: 6
-                    })
+                    headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey },
+                    body: JSON.stringify({ port, countrycode: selectedCountryCode, duration: 6 })
                 });
                 const data = await res.json();
                 if (!res.ok || !data.success) throw new Error(data.message || 'generation failed');
@@ -779,7 +909,7 @@
                 try {
                     const geoRes = await fetch(`https://maxmind.api.iii.vg/?ip=${ip}`);
                     if (geoRes.ok) geo = await geoRes.json();
-                } catch (ge) { /* ignore */ }
+                } catch { }
 
                 const countryName = geo?.country?.name || '—';
                 const countryCode = geo?.country?.iso_code || '';
@@ -792,25 +922,10 @@
                     <div class="proxy-ip-small">${data.ip}</div>
                     <div class="divider-light"></div>
                     <div class="geo-grid">
-                        <div class="geo-item">
-                            <span class="geo-label">country</span>
-                            <span class="geo-value">
-                                ${flagUrl ? `<img src="${flagUrl}" class="flag-mini" alt="">` : ''}
-                                ${countryName} <small>${countryCode}</small>
-                            </span>
-                        </div>
-                        <div class="geo-item">
-                            <span class="geo-label">ISP / ASN</span>
-                            <span class="geo-value">${asnOrg}</span>
-                        </div>
-                        <div class="geo-item">
-                            <span class="geo-label">city</span>
-                            <span class="geo-value">${cityName}</span>
-                        </div>
-                        <div class="geo-item">
-                            <span class="geo-label">duration</span>
-                            <span class="geo-value">6 minutes</span>
-                        </div>
+                        <div class="geo-item"><span class="geo-label">country</span><span class="geo-value">${flagUrl ? `<img src="${flagUrl}" class="flag-mini">` : ''}${countryName} <small>${countryCode}</small></span></div>
+                        <div class="geo-item"><span class="geo-label">ISP / ASN</span><span class="geo-value">${asnOrg}</span></div>
+                        <div class="geo-item"><span class="geo-label">city</span><span class="geo-value">${cityName}</span></div>
+                        <div class="geo-item"><span class="geo-label">duration</span><span class="geo-value">6 minutes</span></div>
                     </div>
                 `;
             } catch (err) {
@@ -818,7 +933,7 @@
             }
         }
 
-        // --- login click
+        // --- event listeners
         loginBtn.addEventListener('click', async () => {
             const key = apiKeyInput.value.trim();
             if (!key) return alert('enter api key');
@@ -831,24 +946,14 @@
 
         generateBtn.addEventListener('click', generateProxy);
 
-        // --- bootstrap: check cookie and attempt auto-login with loading state
+        // --- bootstrap with cookie
         async function bootstrap() {
             const cookieKey = getCookie('batproxy_apikey');
             if (cookieKey) {
                 apiKeyInput.value = cookieKey;
-                // show loading indicator on login screen
-                loginBtn.innerHTML = '<span class="loader-mini"></span> checking';
-                loginBtn.disabled = true;
-                const success = await loadDashboardData(cookieKey);
-                if (!success) {
-                    loginScreen.style.display = 'flex';
-                    dashboard.style.display = 'none';
-                    loginBtn.innerHTML = '→ access panel';
-                    loginBtn.disabled = false;
-                }
+                await loadDashboardData(cookieKey);
             } else {
                 loginScreen.style.display = 'flex';
-                dashboard.style.display = 'none';
             }
         }
 
