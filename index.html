@@ -3,578 +3,566 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BatProxy</title>
+    <title>batproxy · AMOLED</title>
     <style>
+        /* --- AMOLED black & grey — no emoji glare, crisp --- */
         * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
         }
 
         body {
             background: #000000;
-            height: 100vh;
+            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #e5e5e5;
+            margin: 0;
+            padding: 16px;
+            color: #e0e0e0;
         }
 
-        .app {
-            width: 680px;
-            background: #0a0a0a;
-            border: 1px solid #1f1f1f;
-            border-radius: 16px;
-            padding: 24px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8);
+        /* main containers – pure black background, soft grey cards */
+        .login-screen, .app-screen {
+            width: 100%;
+            max-width: 700px;
+            margin: 0 auto;
+            transition: opacity 0.2s ease;
         }
 
-        /* key section */
-        .key-section {
+        .card {
             background: #0f0f0f;
-            border: 1px solid #252525;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
+            border-radius: 28px;
+            padding: 32px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(80, 80, 80, 0.2);
+            border: 1px solid #1e1e1e;
+            backdrop-filter: blur(2px);
         }
 
-        .label {
-            font-size: 12px;
+        .card-header {
+            margin-bottom: 28px;
+        }
+
+        .card-header h1 {
             font-weight: 500;
-            color: #888;
-            letter-spacing: 0.3px;
-            margin-bottom: 6px;
+            font-size: 1.9rem;
+            letter-spacing: -0.5px;
+            color: white;
         }
 
-        .key-input-row {
-            display: flex;
-            gap: 10px;
+        .card-header .sub {
+            color: #909090;
+            font-size: 0.9rem;
+            margin-top: 6px;
+            border-left: 3px solid #2a2a2a;
+            padding-left: 12px;
+        }
+
+        /* form elements – dark, minimal */
+        .field {
+            margin-bottom: 24px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #aaa;
             margin-bottom: 8px;
         }
 
-        .key-input-row input {
-            flex: 1;
-            background: #1a1a1a;
-            border: 1px solid #2d2d2d;
-            border-radius: 8px;
-            padding: 12px 14px;
-            font-size: 14px;
-            color: #fff;
-            outline: none;
-        }
-
-        .key-input-row input:focus {
-            border-color: #4a4a4a;
-            background: #202020;
-        }
-
-        .key-input-row button {
-            background: #252525;
-            border: 1px solid #363636;
-            border-radius: 8px;
-            padding: 0 20px;
-            color: #d4d4d4;
-            font-size: 13px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.1s;
-        }
-
-        .key-input-row button:hover {
-            background: #2f2f2f;
-            border-color: #4a4a4a;
-            color: #fff;
-        }
-
-        .status-text {
-            font-size: 12px;
-            color: #6a6a6a;
-        }
-
-        .status-text.success {
-            color: #8bc34a;
-        }
-
-        .status-text.error {
-            color: #ef5350;
-        }
-
-        /* main ui */
-        .main-ui {
-            opacity: 0.3;
-            pointer-events: none;
-            transition: opacity 0.2s;
-        }
-
-        .main-ui.active {
-            opacity: 1;
-            pointer-events: all;
-        }
-
-        /* loading overlay */
-        .loading {
-            display: none;
-            text-align: center;
-            padding: 40px 0;
-            color: #6a6a6a;
-            font-size: 14px;
-        }
-
-        .loading.active {
-            display: block;
-        }
-
-        .spinner {
-            width: 28px;
-            height: 28px;
-            border: 2px solid #252525;
-            border-top-color: #6a6a6a;
-            border-radius: 50%;
-            margin: 0 auto 12px;
-            animation: spin 0.8s linear infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* country selector */
-        .country-section {
-            background: #0f0f0f;
-            border: 1px solid #252525;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-
-        .select-wrapper {
-            position: relative;
-            margin-top: 8px;
-        }
-
-        select {
+        input, select {
             width: 100%;
             background: #1a1a1a;
-            border: 1px solid #2d2d2d;
-            border-radius: 8px;
-            padding: 12px 14px;
-            font-size: 14px;
-            color: #fff;
+            border: 1px solid #2c2c2c;
+            border-radius: 16px;
+            padding: 16px 18px;
+            font-size: 1rem;
+            color: #f0f0f0;
             outline: none;
-            appearance: none;
+            transition: border 0.15s, background 0.15s;
+            font-family: inherit;
+        }
+
+        input:focus, select:focus {
+            border-color: #666;
+            background: #1e1e1e;
+        }
+
+        input::placeholder {
+            color: #3f3f3f;
+            font-weight: 300;
+        }
+
+        button {
+            background: #1e1e1e;
+            border: 1px solid #333;
+            border-radius: 40px;
+            padding: 14px 28px;
+            font-size: 1rem;
+            font-weight: 500;
+            color: #ddd;
             cursor: pointer;
+            transition: all 0.15s;
+            width: auto;
+            min-width: 160px;
+            letter-spacing: 0.3px;
         }
 
-        select option {
-            background: #1a1a1a;
-            color: #fff;
+        button:hover {
+            background: #2a2a2a;
+            border-color: #555;
+            color: white;
         }
 
-        .select-arrow {
-            position: absolute;
-            right: 14px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #5a5a5a;
-            font-size: 12px;
-            pointer-events: none;
+        button.primary {
+            background: #2a2a2a;
+            border-color: #444;
+            color: white;
         }
 
-        .country-footer {
+        button.primary:hover {
+            background: #3a3a3a;
+            border-color: #777;
+        }
+
+        .flex-row {
             display: flex;
-            justify-content: space-between;
+            gap: 16px;
+            align-items: flex-end;
+            flex-wrap: wrap;
+        }
+
+        .flex-row .field {
+            flex: 1;
+            margin-bottom: 0;
+        }
+
+        /* country selector with flag preview (text only – clean) */
+        .country-select-wrapper {
+            display: flex;
+            gap: 12px;
             align-items: center;
-            margin-top: 10px;
         }
 
-        .country-count {
-            font-size: 12px;
-            color: #6a6a6a;
+        .country-select-wrapper select {
+            flex: 1;
         }
 
-        .refresh-btn {
-            background: none;
-            border: none;
-            color: #7a7a7a;
-            font-size: 12px;
-            cursor: pointer;
-            padding: 4px 8px;
-            border-radius: 4px;
-        }
-
-        .refresh-btn:hover {
-            color: #aaa;
+        .flag-preview {
             background: #1a1a1a;
-        }
-
-        /* generate section */
-        .generate-section {
-            background: #0f0f0f;
-            border: 1px solid #252525;
-            border-radius: 12px;
-            padding: 20px;
-        }
-
-        .generate-btn {
-            width: 100%;
-            background: #252525;
-            border: 1px solid #363636;
-            border-radius: 8px;
-            padding: 14px;
-            color: #d4d4d4;
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.1s;
-            margin-bottom: 16px;
-        }
-
-        .generate-btn:hover:not(:disabled) {
-            background: #2f2f2f;
-            border-color: #4a4a4a;
-            color: #fff;
-        }
-
-        .generate-btn:disabled {
-            opacity: 0.3;
-            cursor: not-allowed;
+            border-radius: 40px;
+            padding: 8px 18px;
+            border: 1px solid #2c2c2c;
+            font-size: 0.9rem;
+            color: #bbb;
+            white-space: nowrap;
         }
 
         /* result panel */
         .result-panel {
+            margin-top: 28px;
             background: #0a0a0a;
-            border: 1px solid #252525;
-            border-radius: 8px;
-            padding: 16px;
-        }
-
-        .result-header {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            margin-bottom: 16px;
-        }
-
-        .result-ip {
-            font-size: 18px;
-            font-weight: 500;
-            color: #fff;
-        }
-
-        .result-port {
-            background: #1a1a1a;
-            padding: 4px 12px;
             border-radius: 20px;
-            font-size: 13px;
-            color: #aaa;
+            padding: 20px;
+            border: 1px solid #242424;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .proxy-line {
+            display: flex;
+            align-items: baseline;
+            gap: 16px;
+            flex-wrap: wrap;
+            background: #111;
+            border-radius: 40px;
+            padding: 12px 20px;
             border: 1px solid #2a2a2a;
         }
 
-        .result-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
-        }
-
-        .result-item {
-            background: #0f0f0f;
-            border: 1px solid #202020;
-            border-radius: 6px;
-            padding: 10px;
-        }
-
-        .result-item .label {
-            font-size: 10px;
-            margin-bottom: 4px;
-        }
-
-        .result-item .value {
-            font-size: 13px;
-            color: #fff;
+        .proxy-line .port-badge {
+            background: #1f1f1f;
+            padding: 6px 18px;
+            border-radius: 40px;
+            font-family: 'Fira Code', monospace;
+            font-size: 1.3rem;
             font-weight: 500;
+            color: #cccccc;
+            border: 1px solid #3a3a3a;
         }
 
-        .error-box {
-            background: #1c0f0f;
-            border: 1px solid #3a2222;
-            border-radius: 6px;
-            padding: 12px;
-            color: #ef5350;
-            font-size: 13px;
-            margin-bottom: 16px;
+        .ip-details-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px 20px;
+            background: #0c0c0c;
+            border-radius: 24px;
+            padding: 18px;
+            border: 1px solid #252525;
         }
+
+        .detail-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .detail-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            color: #777;
+            letter-spacing: 0.3px;
+        }
+
+        .detail-value {
+            font-size: 1rem;
+            color: #eaeaea;
+            word-break: break-word;
+        }
+
+        .status-badge {
+            color: #9b9b9b;
+            font-size: 0.85rem;
+        }
+
+        .loader {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #333;
+            border-radius: 50%;
+            border-top-color: #aaa;
+            animation: spin 0.8s linear infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .hidden { display: none !important; }
 
         hr {
             border: none;
-            border-top: 1px solid #1f1f1f;
-            margin: 16px 0;
+            border-top: 1px solid #262626;
+            margin: 24px 0 16px;
+        }
+
+        .small-note {
+            font-size: 0.75rem;
+            color: #5a5a5a;
+            text-align: right;
+            margin-top: 4px;
+        }
+
+        /* no scrolling on main screen – height fixed */
+        .app-screen .card {
+            max-height: 90vh;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #333 #0a0a0a;
+        }
+
+        .app-screen .card::-webkit-scrollbar {
+            width: 6px;
+        }
+        .app-screen .card::-webkit-scrollbar-track {
+            background: #0a0a0a;
+        }
+        .app-screen .card::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 10px;
         }
     </style>
 </head>
 <body>
-    <div class="app">
-        <!-- key section - always visible -->
-        <div class="key-section">
-            <div class="label">API KEY</div>
-            <div class="key-input-row">
-                <input type="text" id="apiKey" placeholder="Enter your API key" value="test-key-123">
-                <button id="saveKey">Save</button>
+    <!-- LOGIN SCREEN (API key prompt) -->
+    <div id="loginScreen" class="login-screen">
+        <div class="card">
+            <div class="card-header">
+                <h1>batproxy</h1>
+                <div class="sub">amoled · lean · no emoji</div>
             </div>
-            <div id="keyStatus" class="status-text">💾 Key saved to cookies</div>
+            <div class="field">
+                <label>api key</label>
+                <input type="text" id="apiKeyInput" placeholder="e.g. test-key-123" value="test-key-123" autocomplete="off">
+            </div>
+            <button id="saveKeyBtn" class="primary">enter →</button>
+            <div class="small-note" style="margin-top:16px;">key is saved in browser (cookie)</div>
         </div>
+    </div>
 
-        <!-- loading indicator -->
-        <div id="loading" class="loading">
-            <div class="spinner"></div>
-            <div>Loading countries...</div>
-        </div>
-
-        <!-- main UI (hidden until key is valid) -->
-        <div id="mainUi" class="main-ui">
-            <!-- country selector -->
-            <div class="country-section">
-                <div class="label">COUNTRY</div>
-                <div class="select-wrapper">
-                    <select id="countrySelect">
-                        <option value="">Select a country</option>
-                    </select>
-                    <span class="select-arrow">▼</span>
+    <!-- MAIN APPLICATION SCREEN (hidden initially) -->
+    <div id="appScreen" class="app-screen hidden">
+        <div class="card">
+            <div class="card-header" style="display: flex; align-items: center; justify-content: space-between;">
+                <div>
+                    <h1>batproxy</h1>
+                    <div class="sub">pick country · generate</div>
                 </div>
-                <div class="country-footer">
-                    <span id="countryCount" class="country-count">0 countries</span>
-                    <button id="refreshCountries" class="refresh-btn">Refresh</button>
-                </div>
+                <button id="logoutBtn" style="min-width: auto; padding: 8px 18px;">✕</button>
             </div>
 
-            <!-- generate section -->
-            <div class="generate-section">
-                <button id="generateBtn" class="generate-btn" disabled>Generate proxy</button>
-                
-                <!-- error display -->
-                <div id="errorDisplay" class="error-box" style="display: none;"></div>
-                
-                <!-- result panel -->
-                <div id="resultPanel" class="result-panel" style="display: none;">
-                    <div class="result-header">
-                        <span id="resultIp" class="result-ip">-</span>
-                        <span id="resultPort" class="result-port">port: -</span>
+            <!-- loading overlay (inside card) -->
+            <div id="countriesLoader" class="flex-row" style="justify-content: center; padding: 30px 0;">
+                <span class="loader"></span> <span style="color:#888;">loading countries ...</span>
+            </div>
+
+            <!-- main ui (hidden until countries loaded) -->
+            <div id="mainUi" class="hidden">
+                <div class="field">
+                    <label>active api key</label>
+                    <input type="text" id="activeApiKeyDisplay" readonly disabled style="background:#111; color:#aaa;">
+                </div>
+
+                <div class="flex-row" style="margin-bottom: 8px;">
+                    <div class="field" style="flex: 2;">
+                        <label>country</label>
+                        <div class="country-select-wrapper">
+                            <select id="countrySelect"></select>
+                            <div id="selectedFlagPreview" class="flag-preview">—</div>
+                        </div>
                     </div>
-                    <div class="result-grid" id="resultGrid">
+                    <div class="field" style="flex: 1;">
+                        <label>duration (s)</label>
+                        <input type="text" value="6" readonly disabled style="background:#111;">
+                    </div>
+                </div>
+
+                <!-- generate button + random port hint -->
+                <div style="display: flex; gap: 12px; align-items: center; margin: 16px 0 12px;">
+                    <button id="generateBtn" class="primary" style="flex:1;">generate proxy</button>
+                    <div class="status-badge" id="randomPortHint">port 10000‑49999</div>
+                </div>
+
+                <!-- result panel (updated after generation) -->
+                <div id="resultPanel" class="result-panel hidden">
+                    <div class="proxy-line">
+                        <span style="color:#aaa;">proxy</span>
+                        <span class="port-badge" id="proxyPort">—</span>
+                        <span style="color:#666; font-size:0.9rem;" id="proxyIp"></span>
+                    </div>
+                    <div class="ip-details-grid" id="ipDetails">
                         <!-- filled dynamically -->
+                        <div class="detail-item"><span class="detail-label">country</span><span class="detail-value" id="detailCountry">—</span></div>
+                        <div class="detail-item"><span class="detail-label">city</span><span class="detail-value" id="detailCity">—</span></div>
+                        <div class="detail-item"><span class="detail-label">region</span><span class="detail-value" id="detailRegion">—</span></div>
+                        <div class="detail-item"><span class="detail-label">isp</span><span class="detail-value" id="detailIsp">—</span></div>
                     </div>
                 </div>
             </div>
+            <div class="small-note" style="margin-top: 16px;">⚡ random port · no scrolling needed</div>
         </div>
     </div>
 
     <script>
         (function() {
-            // DOM elements
-            const apiKeyInput = document.getElementById('apiKey');
-            const saveKeyBtn = document.getElementById('saveKey');
-            const keyStatus = document.getElementById('keyStatus');
-            const loading = document.getElementById('loading');
-            const mainUi = document.getElementById('mainUi');
-            const countrySelect = document.getElementById('countrySelect');
-            const countryCount = document.getElementById('countryCount');
-            const refreshBtn = document.getElementById('refreshCountries');
-            const generateBtn = document.getElementById('generateBtn');
-            const errorDisplay = document.getElementById('errorDisplay');
-            const resultPanel = document.getElementById('resultPanel');
-            const resultIp = document.getElementById('resultIp');
-            const resultPort = document.getElementById('resultPort');
-            const resultGrid = document.getElementById('resultGrid');
-
-            // Constants
-            const BASE_URL = 'https://proxy-api-zeta.vercel.app';
-            const FLAG_CODES_URL = 'https://flagcdn.com/en/codes.json';
-            const IP_LOOKUP_BASE = 'https://nyanc4tt.xyz/api/iplookup?ip=';
-
-            // State
-            let availableCountries = [];
-            let countryNames = {};
-            let currentApiKey = '';
-
-            // Cookie functions
-            function setCookie(name, value, days = 30) {
+            // --- simple cookie helpers (save api key)
+            function setCookie(name, value, days) {
                 const d = new Date();
                 d.setTime(d.getTime() + (days * 24 * 60 * 60 * 1000));
-                document.cookie = `${name}=${encodeURIComponent(value)}; path=/; SameSite=Lax; expires=${d.toUTCString()}`;
+                document.cookie = `${name}=${encodeURIComponent(value)};expires=${d.toUTCString()};path=/;SameSite=Lax`;
             }
-
             function getCookie(name) {
-                const cookies = document.cookie.split('; ');
-                for (let c of cookies) {
-                    const [key, val] = c.split('=');
-                    if (key === name) return decodeURIComponent(val);
-                }
-                return null;
+                const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+                return match ? decodeURIComponent(match[2]) : null;
             }
 
-            // Load saved key
-            const savedKey = getCookie('batproxy_key');
-            if (savedKey) {
-                apiKeyInput.value = savedKey;
-                keyStatus.textContent = '✓ Key loaded from cookie';
-                keyStatus.className = 'status-text success';
-                validateAndLoad(savedKey);
+            // --- DOM elements
+            const loginScreen = document.getElementById('loginScreen');
+            const appScreen = document.getElementById('appScreen');
+            const apiKeyInput = document.getElementById('apiKeyInput');
+            const saveKeyBtn = document.getElementById('saveKeyBtn');
+            const logoutBtn = document.getElementById('logoutBtn');
+            const countriesLoader = document.getElementById('countriesLoader');
+            const mainUi = document.getElementById('mainUi');
+            const activeApiKeyDisplay = document.getElementById('activeApiKeyDisplay');
+            const countrySelect = document.getElementById('countrySelect');
+            const flagPreview = document.getElementById('selectedFlagPreview');
+            const generateBtn = document.getElementById('generateBtn');
+            const randomPortHint = document.getElementById('randomPortHint');
+            const resultPanel = document.getElementById('resultPanel');
+            const proxyPortSpan = document.getElementById('proxyPort');
+            const proxyIpSpan = document.getElementById('proxyIp');
+            const detailCountry = document.getElementById('detailCountry');
+            const detailCity = document.getElementById('detailCity');
+            const detailRegion = document.getElementById('detailRegion');
+            const detailIsp = document.getElementById('detailIsp');
+
+            // --- state
+            let currentApiKey = getCookie('batproxy_key') || '';   // read cookie
+            let countriesList = [];        // { code, name } from flagcdn
+            let availableCodes = new Set(); // country codes from /proxy/countries
+            let countryMap = new Map();     // code -> full name
+
+            const BASE_URL = 'https://proxy-api-zeta.vercel.app';
+            const FLAG_CODES_URL = 'https://flagcdn.com/en/codes.json';
+
+            // --- if API key exists, skip login and init app
+            if (currentApiKey) {
+                loginScreen.classList.add('hidden');
+                appScreen.classList.remove('hidden');
+                initializeApp(currentApiKey);
+            } else {
+                // show login screen
             }
 
-            // Save key
+            // --- LOGIN: save key and switch view
             saveKeyBtn.addEventListener('click', () => {
                 const key = apiKeyInput.value.trim();
-                if (key) {
-                    setCookie('batproxy_key', key);
-                    keyStatus.textContent = '✓ Key saved';
-                    keyStatus.className = 'status-text success';
-                    validateAndLoad(key);
-                }
-            });
-
-            // Validate key and load countries
-            async function validateAndLoad(key) {
                 if (!key) return;
-                
+                setCookie('batproxy_key', key, 30); // 30 days
                 currentApiKey = key;
-                
-                // Show loading, hide main UI
-                loading.classList.add('active');
-                mainUi.classList.remove('active');
-                errorDisplay.style.display = 'none';
-                resultPanel.style.display = 'none';
-                
+                loginScreen.classList.add('hidden');
+                appScreen.classList.remove('hidden');
+                initializeApp(key);
+            });
+
+            // logout: clear cookie, reset UI
+            logoutBtn.addEventListener('click', () => {
+                setCookie('batproxy_key', '', -1);
+                currentApiKey = '';
+                loginScreen.classList.remove('hidden');
+                appScreen.classList.add('hidden');
+                // reset any sensitive fields
+                countrySelect.innerHTML = '';
+                resultPanel.classList.add('hidden');
+            });
+
+            // --- main init: fetch countries, populate dropdown, show UI
+            async function initializeApp(apiKey) {
+                activeApiKeyDisplay.value = apiKey;
+                countriesLoader.classList.remove('hidden');
+                mainUi.classList.add('hidden');
+                resultPanel.classList.add('hidden');
+
                 try {
-                    // Fetch both country list and flag names
-                    const [countries, flags] = await Promise.all([
-                        fetch(`${BASE_URL}/proxy/countries`, {
-                            headers: { 'x-api-key': key }
-                        }).then(res => {
-                            if (!res.ok) throw new Error('Invalid API key');
-                            return res.json();
-                        }),
-                        fetch(FLAG_CODES_URL).then(res => res.json())
-                    ]);
-                    
-                    availableCountries = countries.countries.map(c => c.toLowerCase());
-                    countryNames = flags;
-                    
-                    // Populate dropdown
-                    populateDropdown();
-                    
-                    // Enable main UI
-                    mainUi.classList.add('active');
-                    generateBtn.disabled = false;
-                    
+                    // 1. fetch available country codes from proxy api (with auth)
+                    const countriesRes = await fetch(`${BASE_URL}/proxy/countries`, {
+                        headers: { 'x-api-key': apiKey }
+                    });
+                    if (!countriesRes.ok) throw new Error(`API error ${countriesRes.status}`);
+                    const countriesData = await countriesRes.json(); // array like ["ca","bm",...]
+                    // expected: { countries: [...] } or direct array? based on doc example: { "countries": ["ca","bm",...] }
+                    let codesArray = [];
+                    if (Array.isArray(countriesData)) codesArray = countriesData;
+                    else if (countriesData.countries && Array.isArray(countriesData.countries)) codesArray = countriesData.countries;
+                    else throw new Error('Unexpected countries format');
+
+                    availableCodes = new Set(codesArray.map(c => c.toLowerCase()));
+
+                    // 2. fetch flagcdn codes for full names
+                    const flagRes = await fetch(FLAG_CODES_URL);
+                    const flagNames = await flagRes.json(); // { "ad": "Andorra", ... }
+
+                    // build map and filter only allowed codes
+                    countryMap.clear();
+                    for (const [code, name] of Object.entries(flagNames)) {
+                        const lowerCode = code.toLowerCase();
+                        if (availableCodes.has(lowerCode)) {
+                            countryMap.set(lowerCode, name);
+                        }
+                    }
+
+                    // sort by name
+                    const sorted = Array.from(countryMap.entries()).sort((a, b) => a[1].localeCompare(b[1]));
+
+                    // populate select
+                    countrySelect.innerHTML = '';
+                    for (const [code, name] of sorted) {
+                        const option = document.createElement('option');
+                        option.value = code;
+                        option.textContent = `${name} (${code.toUpperCase()})`;
+                        countrySelect.appendChild(option);
+                    }
+
+                    // default maybe "BS" if exists
+                    if (countryMap.has('bs')) countrySelect.value = 'bs';
+                    else if (sorted.length > 0) countrySelect.value = sorted[0][0];
+
+                    updateFlagPreview();
+                    countriesLoader.classList.add('hidden');
+                    mainUi.classList.remove('hidden');
                 } catch (err) {
-                    keyStatus.textContent = '✗ Failed to load countries - invalid key?';
-                    keyStatus.className = 'status-text error';
-                    generateBtn.disabled = true;
-                } finally {
-                    loading.classList.remove('active');
+                    countriesLoader.innerHTML = `<span style="color:#b66;">⚠️ error: ${err.message}</span>`;
                 }
             }
 
-            // Populate country dropdown
-            function populateDropdown() {
-                const validCountries = availableCountries
-                    .filter(code => countryNames[code])
-                    .map(code => ({
-                        code,
-                        name: countryNames[code]
-                    }))
-                    .sort((a, b) => a.name.localeCompare(b.name));
-
-                let html = '<option value="">Select a country</option>';
-                validCountries.forEach(c => {
-                    html += `<option value="${c.code}">${c.name}</option>`;
-                });
-                
-                countrySelect.innerHTML = html;
-                countryCount.textContent = `${validCountries.length} countries`;
+            // update flag preview text
+            function updateFlagPreview() {
+                const code = countrySelect.value;
+                const name = countryMap.get(code) || code.toUpperCase();
+                flagPreview.textContent = `${name} (${code.toUpperCase()})`;
             }
+            countrySelect.addEventListener('change', updateFlagPreview);
 
-            // Refresh countries
-            refreshBtn.addEventListener('click', () => {
-                if (currentApiKey) validateAndLoad(currentApiKey);
-            });
-
-            // Enable generate when country selected
-            countrySelect.addEventListener('change', () => {
-                generateBtn.disabled = !countrySelect.value;
-            });
-
-            // Generate proxy
+            // --- generate proxy
             generateBtn.addEventListener('click', async () => {
-                const country = countrySelect.value;
-                if (!country) return;
+                const apiKey = currentApiKey;
+                if (!apiKey) return;
 
+                // generate random port 10000-49999
                 const port = Math.floor(Math.random() * (49999 - 10000 + 1)) + 10000;
-                
+                randomPortHint.textContent = `port ${port}`;
+
+                const countryCode = countrySelect.value;
+                if (!countryCode) return;
+
+                // temporarily disable button
                 generateBtn.disabled = true;
-                generateBtn.textContent = 'Generating...';
-                errorDisplay.style.display = 'none';
-                
+                generateBtn.textContent = 'generating...';
+
                 try {
-                    // Generate proxy
+                    // 1. POST /generate
                     const genRes = await fetch(`${BASE_URL}/generate`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
-                            'x-api-key': currentApiKey
+                            'x-api-key': apiKey
                         },
                         body: JSON.stringify({
-                            port,
-                            countrycode: country,
-                            duration: 6
+                            port: port,
+                            countrycode: countryCode,
+                            duration: 6   // fixed as doc: 6
                         })
                     });
 
-                    if (!genRes.ok) throw new Error('Generation failed');
-                    
-                    const genData = await genRes.json();
-                    if (!genData.success) throw new Error('Generation failed');
+                    if (!genRes.ok) throw new Error(`generate failed (${genRes.status})`);
+                    const genData = await genRes.json();  // { duration, ip, port, success }
 
-                    // Get IP info
-                    const ipRes = await fetch(`${IP_LOOKUP_BASE}${genData.ip}`);
-                    const ipInfo = await ipRes.json();
+                    if (!genData.success) throw new Error('proxy generation unsuccessful');
 
-                    // Display results
-                    displayResult(genData.ip, genData.port, ipInfo);
-                    
+                    const proxyIp = genData.ip;
+                    const proxyPort = genData.port || port;
+
+                    // 2. ip lookup
+                    const lookupRes = await fetch(`https://nyanc4tt.xyz/api/iplookup?ip=${proxyIp}`);
+                    if (!lookupRes.ok) throw new Error('IP lookup failed');
+                    const lookup = await lookupRes.json();  // includes country, city, region, isp etc.
+
+                    // update result panel
+                    proxyPortSpan.textContent = proxyPort;
+                    proxyIpSpan.textContent = proxyIp;
+                    detailCountry.textContent = lookup.country || '—';
+                    detailCity.textContent = lookup.city || '—';
+                    detailRegion.textContent = lookup.region || '—';
+                    detailIsp.textContent = lookup.isp || '—';
+
+                    resultPanel.classList.remove('hidden');
                 } catch (err) {
-                    errorDisplay.textContent = `Error: ${err.message}`;
-                    errorDisplay.style.display = 'block';
-                    resultPanel.style.display = 'none';
+                    alert(`error: ${err.message}`);
                 } finally {
                     generateBtn.disabled = false;
-                    generateBtn.textContent = 'Generate proxy';
+                    generateBtn.textContent = 'generate proxy';
                 }
             });
 
-            // Display result
-            function displayResult(ip, port, info) {
-                resultIp.textContent = ip;
-                resultPort.textContent = `port: ${port}`;
-                
-                const fields = [
-                    { label: 'COUNTRY', value: info.country || '-' },
-                    { label: 'CITY', value: info.city || '-' },
-                    { label: 'ISP', value: info.isp || '-' },
-                    { label: 'REGION', value: info.region || '-' },
-                    { label: 'ASN', value: info.asn || '-' },
-                    { label: 'CONTINENT', value: info.continent || '-' }
-                ];
-                
-                resultGrid.innerHTML = fields.map(f => `
-                    <div class="result-item">
-                        <div class="label">${f.label}</div>
-                        <div class="value">${f.value}</div>
-                    </div>
-                `).join('');
-                
-                resultPanel.style.display = 'block';
-            }
+            // ensure flag updates when app loads
+            window.updateFlagPreview = updateFlagPreview; // for later calls
+
+            // if somehow countrySelect changes after generation, fine
         })();
     </script>
 </body>
