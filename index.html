@@ -21,7 +21,6 @@
             color: #e0e0e0;
         }
 
-        /* main container – exactly viewport, no scrolling on outer */
         .app {
             width: 100vw;
             height: 100vh;
@@ -30,7 +29,7 @@
             background: #0a0a0a;
         }
 
-        /* LOGIN SCREEN — covers whole app until auth */
+        /* LOGIN SCREEN */
         .login-screen {
             width: 100%;
             height: 100%;
@@ -106,7 +105,12 @@
             border-color: #4a4a4a;
         }
 
-        /* main dashboard – hidden by default */
+        .login-btn:disabled {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        /* DASHBOARD */
         .dashboard {
             display: none;
             width: 100%;
@@ -116,7 +120,6 @@
             overflow: hidden;
         }
 
-        /* header */
         .bar {
             display: flex;
             align-items: center;
@@ -161,15 +164,13 @@
         }
 
         .key-badge .key-trunc {
-            max-width: 170px;
+            max-width: 200px;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
-            direction: rtl;
             font-family: monospace;
         }
 
-        /* main content — takes full remaining height, no scroll */
         .main-panel {
             display: flex;
             flex: 1;
@@ -178,9 +179,8 @@
             background: #000000;
         }
 
-        /* left column: country selector & generate */
         .left-panel {
-            width: 360px;
+            width: 380px;
             background: #0a0a0a;
             border-right: 1px solid #1b1b1b;
             padding: 2rem 1.8rem;
@@ -199,7 +199,7 @@
             font-weight: 500;
         }
 
-        /* ----- custom searchable dropdown with flags ----- */
+        /* custom dropdown */
         .custom-dropdown {
             position: relative;
             width: 100%;
@@ -220,10 +220,10 @@
         }
 
         .dropdown-selected img {
-            width: 24px;
-            height: 18px;
+            width: 28px;
+            height: 21px;
             object-fit: cover;
-            border-radius: 2px;
+            border-radius: 3px;
             border: 1px solid #3a3a3a;
         }
 
@@ -249,7 +249,7 @@
             border: 1px solid #2e2e2e;
             border-radius: 18px;
             z-index: 20;
-            max-height: 300px;
+            max-height: 320px;
             overflow: hidden;
             display: flex;
             flex-direction: column;
@@ -278,7 +278,7 @@
 
         .dropdown-options {
             overflow-y: auto;
-            max-height: 220px;
+            max-height: 240px;
             background: #151515;
         }
 
@@ -296,10 +296,11 @@
         }
 
         .dropdown-option img {
-            width: 26px;
-            height: 20px;
+            width: 32px;
+            height: 24px;
             object-fit: cover;
             border: 1px solid #3d3d3d;
+            border-radius: 3px;
         }
 
         .dropdown-option span {
@@ -310,7 +311,6 @@
         .hidden {
             display: none;
         }
-        /* ----- end dropdown ----- */
 
         .info-row {
             display: flex;
@@ -351,7 +351,6 @@
             pointer-events: none;
         }
 
-        /* right panel – IP details */
         .right-panel {
             flex: 1;
             background: #050505;
@@ -460,9 +459,16 @@
             font-size: 0.9rem;
         }
 
-        .flag-placeholder {
-            font-size: 1.8rem;
-            filter: grayscale(30%);
+        /* loading state for login check */
+        .loader-mini {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 2px solid #3a3a3a;
+            border-top: 2px solid #aaa;
+            border-radius: 50%;
+            animation: spin 1s infinite linear;
+            margin-right: 8px;
         }
     </style>
 </head>
@@ -473,7 +479,7 @@
         <div class="login-card">
             <h1>batproxy</h1>
             <div class="sub">authenticated tunnel</div>
-            <input type="text" class="key-input" id="apiKeyInput" placeholder="enter your api key" value="test-key-123" autocomplete="off">
+            <input type="text" class="key-input" id="apiKeyInput" placeholder="enter your api key" autocomplete="off">
             <button class="login-btn" id="loginBtn">→ access panel</button>
         </div>
     </div>
@@ -484,16 +490,14 @@
             <div class="logo">batproxy <span>// secure</span></div>
             <div class="key-badge" id="keyBadge">
                 <span class="dot"></span>
-                <span class="key-trunc" id="truncatedKey">key</span>
+                <span class="key-trunc" id="truncatedKey">loading...</span>
             </div>
         </div>
 
         <div class="main-panel">
-            <!-- left: country selector (custom dropdown) + generate -->
             <div class="left-panel">
                 <div>
                     <div class="section-label">01 · egress</div>
-                    <!-- custom dropdown container (filled dynamically) -->
                     <div id="countryDropdownContainer"></div>
 
                     <div style="margin-top: 1.5rem;">
@@ -506,7 +510,6 @@
                 <div style="margin-top: auto; font-size:0.7rem; color:#303030; text-align:center;">decodo · outbound</div>
             </div>
 
-            <!-- right: live proxy + ip details -->
             <div class="right-panel" id="rightPanel">
                 <div class="proxy-result" id="proxyResult">
                     <div class="loading-overlay" id="initialLoader">
@@ -522,7 +525,7 @@
     (function() {
         // --- config
         const BASE_URL = 'https://proxy-api-zeta.vercel.app';
-        const FLAG_CODES_URL = 'https://flagcdn.com/en/codes.json';
+        const CSV_URL = 'https://jklm.gay/list.csv';  // your CSV file
 
         // DOM elements
         const loginScreen = document.getElementById('loginScreen');
@@ -536,10 +539,22 @@
 
         // state
         let apiKey = '';
-        let countriesAvailable = [];               // raw country codes from api
-        let countryNameMap = new Map();             // code -> full name (flagcdn)
-        let countriesFull = [];                      // { code, name }
-        let selectedCountryCode = 'bs';              // default fallback
+        let username = 'user';
+        let countriesFull = [];          // from CSV: { code, name, photoUrl }
+        let selectedCountryCode = 'bs';
+
+        // --- helper: decode base64 api key to extract username
+        function extractUsernameFromKey(key) {
+            try {
+                const decoded = atob(key);
+                // expected format: u-<username>-k-<64 hex>
+                const match = decoded.match(/^u-(.+?)-k-/);
+                if (match && match[1]) return match[1];
+                return 'user';
+            } catch (e) {
+                return 'user';
+            }
+        }
 
         // --- cookie helpers
         function setCookie(name, value, days) {
@@ -552,45 +567,65 @@
             return match ? match[2] : null;
         }
 
-        // --- load flag mapping
-        async function loadFlagMapping() {
+        // --- fetch and parse CSV from jklm.gay/list.csv
+        async function fetchCountryListFromCSV() {
             try {
-                const res = await fetch(FLAG_CODES_URL);
-                if (!res.ok) throw new Error('flag fetch fail');
-                const data = await res.json();
-                countryNameMap = new Map(Object.entries(data));
+                const response = await fetch(CSV_URL);
+                if (!response.ok) throw new Error('CSV fetch failed');
+                const csvText = await response.text();
+                const lines = csvText.split('\n').filter(line => line.trim() !== '');
+                const headers = lines[0].split(',').map(h => h.trim());
+                const nameIdx = headers.indexOf('English short name');
+                const codeIdx = headers.indexOf('Alpha-2 code');
+                const photoIdx = headers.indexOf('PhotoUrl');
+                if (nameIdx === -1 || codeIdx === -1 || photoIdx === -1) throw new Error('CSV format mismatch');
+
+                const countries = [];
+                for (let i = 1; i < lines.length; i++) {
+                    // naive CSV parse (handles quotes loosely)
+                    const parts = lines[i].match(/(".*?"|[^,]+)(?=\s*,|\s*$)/g) || [];
+                    const clean = parts.map(p => p.replace(/^"|"$/g, '').trim());
+                    if (clean.length <= Math.max(nameIdx, codeIdx, photoIdx)) continue;
+                    const name = clean[nameIdx];
+                    const code = clean[codeIdx]?.toLowerCase();
+                    const photo = clean[photoIdx];
+                    if (code && name && photo && photo.startsWith('http')) {
+                        countries.push({ code, name, photoUrl: photo });
+                    }
+                }
+                return countries;
             } catch (e) {
-                console.warn('flagcdn failed, using fallback');
+                console.warn('CSV fetch failed, using fallback flagcdn', e);
+                // fallback: generate from flagcdn codes (without custom photos)
+                try {
+                    const flagRes = await fetch('https://flagcdn.com/en/codes.json');
+                    const flagData = await flagRes.json();
+                    return Object.entries(flagData).map(([code, name]) => ({
+                        code: code.toLowerCase(),
+                        name,
+                        photoUrl: `https://flagcdn.com/w80/${code.toLowerCase()}.png` // fallback flag
+                    }));
+                } catch (err) {
+                    return [];
+                }
             }
         }
 
-        // --- fetch countries from proxy api (requires key)
-        async function fetchCountries(key) {
-            try {
-                const res = await fetch(`${BASE_URL}/proxy/countries`, {
-                    headers: { 'x-api-key': key }
-                });
-                if (!res.ok) throw new Error(`countries fetch ${res.status}`);
-                const json = await res.json();
-                return json.countries || [];
-            } catch (err) {
-                console.error(err);
-                return [];
-            }
-        }
-
-        // --- render custom searchable dropdown with flags
-        function renderDropdown(selectedCode = 'bs') {
+        // --- render custom dropdown with country photos
+        function renderDropdown(selectedCode) {
             if (!countriesFull.length) {
                 dropdownContainer.innerHTML = `<div class="custom-dropdown"><div class="dropdown-selected"><span>no countries</span></div></div>`;
                 return;
             }
 
+            const selected = countriesFull.find(c => c.code === selectedCode) || countriesFull[0];
+            selectedCountryCode = selected.code;
+
             const html = `
                 <div class="custom-dropdown" id="customDropdown">
                     <div class="dropdown-selected" id="dropdownSelected">
-                        <img src="https://flagcdn.com/w40/${selectedCode}.png" alt="" id="selectedFlag">
-                        <span id="selectedCountryText">${getCountryName(selectedCode)} (${selectedCode.toUpperCase()})</span>
+                        <img src="${selected.photoUrl}" alt="" id="selectedFlag" loading="lazy">
+                        <span id="selectedCountryText">${selected.name} (${selected.code.toUpperCase()})</span>
                     </div>
                     <div class="dropdown-panel hidden" id="dropdownPanel">
                         <div class="dropdown-search">
@@ -602,7 +637,6 @@
             `;
             dropdownContainer.innerHTML = html;
 
-            // populate options
             const optionsDiv = document.getElementById('dropdownOptions');
             function renderOptions(filter = '') {
                 const filtered = countriesFull.filter(c => 
@@ -611,14 +645,13 @@
                 );
                 optionsDiv.innerHTML = filtered.map(c => `
                     <div class="dropdown-option" data-code="${c.code}">
-                        <img src="https://flagcdn.com/w40/${c.code}.png" alt="" loading="lazy">
+                        <img src="${c.photoUrl}" alt="" loading="lazy" onerror="this.src='https://flagcdn.com/w80/${c.code}.png'">
                         <span>${c.name} (${c.code.toUpperCase()})</span>
                     </div>
                 `).join('');
             }
             renderOptions('');
 
-            // event listeners
             const selectedDiv = document.getElementById('dropdownSelected');
             const panel = document.getElementById('dropdownPanel');
             const searchInput = document.getElementById('dropdownSearch');
@@ -633,19 +666,19 @@
                 renderOptions(e.target.value);
             });
 
-            // option click
             optionsDiv.addEventListener('click', (e) => {
                 const option = e.target.closest('.dropdown-option');
                 if (!option) return;
                 const code = option.dataset.code;
-                selectedCountryCode = code;
-                // update selected area
-                document.getElementById('selectedFlag').src = `https://flagcdn.com/w40/${code}.png`;
-                document.getElementById('selectedCountryText').innerText = `${getCountryName(code)} (${code.toUpperCase()})`;
-                panel.classList.add('hidden');
+                const newSel = countriesFull.find(c => c.code === code);
+                if (newSel) {
+                    selectedCountryCode = code;
+                    document.getElementById('selectedFlag').src = newSel.photoUrl;
+                    document.getElementById('selectedCountryText').innerText = `${newSel.name} (${code.toUpperCase()})`;
+                    panel.classList.add('hidden');
+                }
             });
 
-            // close when clicking outside
             document.addEventListener('click', function closeDropdown(e) {
                 if (!document.getElementById('customDropdown')?.contains(e.target)) {
                     if (panel) panel.classList.add('hidden');
@@ -653,38 +686,55 @@
             });
         }
 
-        // helper to get full name
-        function getCountryName(code) {
-            const found = countriesFull.find(c => c.code === code);
-            return found ? found.name : code.toUpperCase();
-        }
+        // --- load initial data after login (countries, then dropdown)
+        async function loadDashboardData(key) {
+            // show loading state on login button
+            loginBtn.innerHTML = '<span class="loader-mini"></span> validating';
+            loginBtn.disabled = true;
 
-        // --- load data after login
-        async function finalizeLogin(key) {
+            // extract username
+            username = extractUsernameFromKey(key);
             apiKey = key;
-            const codes = await fetchCountries(apiKey);
-            if (!codes.length) {
-                alert('api key invalid or no countries');
+
+            // fetch country list from CSV
+            const csvCountries = await fetchCountryListFromCSV();
+            if (csvCountries.length) {
+                countriesFull = csvCountries.sort((a,b) => a.name.localeCompare(b.name));
+            } else {
+                // ultimate fallback: just use codes from proxy? but proxy gives limited set.
+                // we'll show a minimal set from proxy + flagcdn
+                try {
+                    const proxyCodes = await fetch(`${BASE_URL}/proxy/countries`, { headers: { 'x-api-key': key } });
+                    const proxyJson = await proxyCodes.json();
+                    const codes = proxyJson.countries || [];
+                    const flagRes = await fetch('https://flagcdn.com/en/codes.json');
+                    const flagData = await flagRes.json();
+                    countriesFull = codes.map(code => ({
+                        code: code.toLowerCase(),
+                        name: flagData[code.toUpperCase()] || code.toUpperCase(),
+                        photoUrl: `https://flagcdn.com/w80/${code.toLowerCase()}.png`
+                    })).sort((a,b) => a.name.localeCompare(b.name));
+                } catch (e) {
+                    proxyResultDiv.innerHTML = `<div class="error-message">failed to load countries</div>`;
+                    loginBtn.innerHTML = '→ access panel';
+                    loginBtn.disabled = false;
+                    return false;
+                }
+            }
+
+            if (!countriesFull.length) {
+                proxyResultDiv.innerHTML = `<div class="error-message">no countries available</div>`;
+                loginBtn.innerHTML = '→ access panel';
+                loginBtn.disabled = false;
                 return false;
             }
-            countriesAvailable = codes;
 
-            // build full list with names
-            countriesFull = countriesAvailable.map(code => ({
-                code,
-                name: countryNameMap.get(code) || code.toUpperCase()
-            })).sort((a,b) => a.name.localeCompare(b.name));
-
-            // set default selection (BS if exists else first)
+            // set default selection (bs if present)
             if (countriesFull.some(c => c.code === 'bs')) selectedCountryCode = 'bs';
-            else if (countriesFull.length) selectedCountryCode = countriesFull[0].code;
+            else selectedCountryCode = countriesFull[0].code;
 
-            // render dropdown
             renderDropdown(selectedCountryCode);
-
-            // update badge
-            const showKey = apiKey.length > 12 ? apiKey.substring(0,4) + '…' + apiKey.slice(-4) : apiKey;
-            keyBadgeTrunc.textContent = showKey;
+            keyBadgeTrunc.textContent = username;   // show username
 
             // switch UI
             loginScreen.style.display = 'none';
@@ -693,11 +743,13 @@
             // empty state
             proxyResultDiv.innerHTML = `<div class="loading-overlay"><div class="spinner"></div> <span>ready · select country & generate</span></div>`;
 
-            setCookie('batproxy_apikey', apiKey, 7);
+            setCookie('batproxy_apikey', key, 7);
+            loginBtn.innerHTML = '→ access panel';  // reset
+            loginBtn.disabled = false;
             return true;
         }
 
-        // --- generate proxy
+        // --- generate proxy (unchanged logic but uses selectedCountryCode)
         async function generateProxy() {
             if (!selectedCountryCode) {
                 alert('select a country');
@@ -716,13 +768,12 @@
                     body: JSON.stringify({
                         port: port,
                         countrycode: selectedCountryCode,
-                        duration: 6      // 6 minutes
+                        duration: 6
                     })
                 });
                 const data = await res.json();
                 if (!res.ok || !data.success) throw new Error(data.message || 'generation failed');
 
-                // fetch ip details from maxmind api
                 const ip = data.ip;
                 let geo = null;
                 try {
@@ -730,12 +781,11 @@
                     if (geoRes.ok) geo = await geoRes.json();
                 } catch (ge) { /* ignore */ }
 
-                // build display: PORT big, IP small
-                let countryName = geo?.country?.name || '—';
-                let countryCode = geo?.country?.iso_code || '';
-                let cityName = geo?.city?.name || '—';
-                let asnOrg = geo?.asn?.organization || '—';
-                let flagUrl = countryCode ? `https://flagcdn.com/w40/${countryCode.toLowerCase()}.png` : '';
+                const countryName = geo?.country?.name || '—';
+                const countryCode = geo?.country?.iso_code || '';
+                const cityName = geo?.city?.name || '—';
+                const asnOrg = geo?.asn?.organization || '—';
+                const flagUrl = countryCode ? `https://flagcdn.com/w40/${countryCode.toLowerCase()}.png` : '';
 
                 proxyResultDiv.innerHTML = `
                     <div class="proxy-port-large">${data.port}</div>
@@ -772,7 +822,7 @@
         loginBtn.addEventListener('click', async () => {
             const key = apiKeyInput.value.trim();
             if (!key) return alert('enter api key');
-            await finalizeLogin(key);
+            await loadDashboardData(key);
         });
 
         apiKeyInput.addEventListener('keypress', (e) => {
@@ -781,16 +831,20 @@
 
         generateBtn.addEventListener('click', generateProxy);
 
-        // --- bootstrap: check cookie & preload flag map
+        // --- bootstrap: check cookie and attempt auto-login with loading state
         async function bootstrap() {
-            await loadFlagMapping(); // preload names
             const cookieKey = getCookie('batproxy_apikey');
             if (cookieKey) {
                 apiKeyInput.value = cookieKey;
-                const success = await finalizeLogin(cookieKey);
+                // show loading indicator on login screen
+                loginBtn.innerHTML = '<span class="loader-mini"></span> checking';
+                loginBtn.disabled = true;
+                const success = await loadDashboardData(cookieKey);
                 if (!success) {
                     loginScreen.style.display = 'flex';
                     dashboard.style.display = 'none';
+                    loginBtn.innerHTML = '→ access panel';
+                    loginBtn.disabled = false;
                 }
             } else {
                 loginScreen.style.display = 'flex';
