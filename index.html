@@ -21,7 +21,6 @@
             color: #e0e0e0;
         }
 
-        /* main container */
         .app {
             width: 100vw;
             height: 100vh;
@@ -48,7 +47,7 @@
             padding: 2.5rem 2.2rem;
             width: 440px;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8);
-            transition: all 0.2s ease;
+            transition: all 0.2s;
         }
 
         .login-card h1 {
@@ -102,60 +101,78 @@
             background: #2a2a2a;
             border-color: #4a4a4a;
         }
+
         .login-btn:disabled {
-            opacity: 0.5;
+            opacity: 0.4;
             cursor: not-allowed;
         }
 
-        /* loading stepper inside login card */
-        .login-steps {
-            margin-top: 24px;
-            background: #0c0c0c;
-            border-radius: 20px;
-            padding: 1.2rem 1.2rem;
-            border: 1px solid #232323;
+        /* STEP LOADER — elegant, amoled */
+        .step-loader {
+            margin-top: 1.8rem;
+            border-top: 1px solid #232323;
+            padding-top: 1.5rem;
         }
-        .step-row {
+
+        .step {
             display: flex;
             align-items: center;
-            gap: 12px;
-            padding: 8px 0;
-            border-bottom: 1px solid #202020;
+            gap: 14px;
+            margin-bottom: 16px;
+            color: #6f6f6f;
+            font-size: 0.95rem;
         }
-        .step-row:last-child { border-bottom: none; }
+
         .step-indicator {
-            width: 24px; height: 24px;
+            width: 24px;
+            height: 24px;
             border-radius: 50%;
             background: #1e1e1e;
-            display: inline-flex;
+            border: 1px solid #333;
+            display: flex;
             align-items: center;
             justify-content: center;
             font-size: 0.8rem;
             color: #aaa;
-            border: 1px solid #333;
-        }
-        .step-indicator.done {
-            background: #1e4a2c;
-            border-color: #2b8a48;
-            color: #b7ffcf;
-        }
-        .step-indicator.active {
-            background: #2c2c2c;
-            border-color: #6a6a6a;
-            color: white;
-            box-shadow: 0 0 8px #555;
-        }
-        .step-label {
-            color: #ccc;
-            font-size: 0.9rem;
-            flex: 1;
-        }
-        .step-status {
-            color: #5f5f5f;
-            font-size: 0.8rem;
+            transition: all 0.2s;
         }
 
-        /* main dashboard */
+        .step.active .step-indicator {
+            background: #2b5a2b;
+            border-color: #5f9f5f;
+            color: white;
+            box-shadow: 0 0 10px #2f9f2f70;
+        }
+
+        .step.done .step-indicator {
+            background: #1e4a1e;
+            border-color: #3c8d3c;
+            color: #b0ffb0;
+        }
+
+        .step.done .step-indicator::after {
+            content: "✓";
+            font-size: 1rem;
+        }
+
+        .step.done .step-indicator span {
+            display: none;
+        }
+
+        .step .step-text {
+            flex: 1;
+        }
+
+        .step.active .step-text {
+            color: #eaeaea;
+        }
+
+        .step small {
+            color: #6e6e6e;
+            font-size: 0.75rem;
+        }
+
+        /* dashboard */
         .dashboard {
             display: none;
             width: 100%;
@@ -181,31 +198,43 @@
             letter-spacing: -0.5px;
             color: white;
         }
-        .logo span { color: #5f5f5f; font-weight: 300; margin-left: 6px; }
+
+        .logo span {
+            color: #5f5f5f;
+            font-weight: 300;
+            margin-left: 6px;
+        }
 
         .key-badge {
             background: #141414;
             border-radius: 40px;
-            padding: 0.5rem 1.4rem;
+            padding: 0.5rem 1.5rem;
             border: 1px solid #2a2a2a;
-            font-size: 0.9rem;
-            color: #e0e0e0;
+            font-size: 0.85rem;
+            color: #dddddd;
             display: flex;
             align-items: center;
             gap: 0.8rem;
         }
+
         .key-badge .dot {
-            width: 10px; height: 10px;
+            width: 10px;
+            height: 10px;
             background: #1f9a5a;
             border-radius: 50%;
             box-shadow: 0 0 8px #1f9a5a70;
         }
-        .username-badge {
-            font-weight: 450;
-            letter-spacing: -0.2px;
+
+        .key-badge .username {
+            font-weight: 500;
             color: white;
+            max-width: 180px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
+        /* main panel */
         .main-panel {
             display: flex;
             flex: 1;
@@ -214,7 +243,6 @@
             background: #000000;
         }
 
-        /* left panel */
         .left-panel {
             width: 360px;
             background: #0a0a0a;
@@ -225,6 +253,7 @@
             gap: 2rem;
             flex-shrink: 0;
         }
+
         .section-label {
             text-transform: uppercase;
             font-size: 0.7rem;
@@ -234,7 +263,7 @@
             font-weight: 500;
         }
 
-        /* custom dropdown (same as before, compact) */
+        /* custom dropdown same as before (improved) */
         .custom-dropdown {
             position: relative;
             width: 100%;
@@ -242,6 +271,7 @@
             border: 1px solid #262626;
             border-radius: 18px;
         }
+
         .dropdown-selected {
             display: flex;
             align-items: center;
@@ -252,9 +282,28 @@
             border-radius: 18px;
             border: 1px solid #2e2e2e;
         }
-        .dropdown-selected img { width: 24px; height: 18px; object-fit: cover; border-radius: 2px; border: 1px solid #3a3a3a; }
-        .dropdown-selected span { color: #ececec; font-size: 1rem; flex: 1; }
-        .dropdown-selected:after { content: "⌄"; color: #6a6a6a; font-size: 1.4rem; line-height: 1; }
+
+        .dropdown-selected img {
+            width: 26px;
+            height: 20px;
+            object-fit: cover;
+            border-radius: 3px;
+            border: 1px solid #3a3a3a;
+        }
+
+        .dropdown-selected span {
+            color: #ececec;
+            font-size: 1rem;
+            flex: 1;
+        }
+
+        .dropdown-selected:after {
+            content: "⌄";
+            color: #6a6a6a;
+            font-size: 1.4rem;
+            line-height: 1;
+        }
+
         .dropdown-panel {
             position: absolute;
             top: calc(100% + 6px);
@@ -270,63 +319,196 @@
             flex-direction: column;
             box-shadow: 0 20px 30px rgba(0,0,0,0.9);
         }
-        .dropdown-search { padding: 12px; border-bottom: 1px solid #2a2a2a; }
+
+        .dropdown-search {
+            padding: 12px;
+            border-bottom: 1px solid #2a2a2a;
+        }
+
         .dropdown-search input {
-            width: 100%; background: #1f1f1f; border: 1px solid #3a3a3a;
-            border-radius: 40px; padding: 10px 14px; color: white;
-            font-size: 0.9rem; outline: none;
+            width: 100%;
+            background: #1f1f1f;
+            border: 1px solid #3a3a3a;
+            border-radius: 40px;
+            padding: 10px 14px;
+            color: white;
+            font-size: 0.9rem;
+            outline: none;
         }
-        .dropdown-options { overflow-y: auto; max-height: 220px; background: #151515; }
+
+        .dropdown-options {
+            overflow-y: auto;
+            max-height: 220px;
+            background: #151515;
+        }
+
         .dropdown-option {
-            display: flex; align-items: center; gap: 12px;
-            padding: 10px 16px; cursor: pointer; border-bottom: 1px solid #242424;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 16px;
+            cursor: pointer;
+            border-bottom: 1px solid #242424;
         }
-        .dropdown-option:hover { background: #222222; }
-        .dropdown-option img { width: 26px; height: 20px; object-fit: cover; border: 1px solid #3d3d3d; }
-        .hidden { display: none; }
+
+        .dropdown-option:hover {
+            background: #222222;
+        }
+
+        .dropdown-option img {
+            width: 26px;
+            height: 20px;
+            object-fit: cover;
+            border: 1px solid #3d3d3d;
+        }
+
+        .hidden {
+            display: none;
+        }
 
         .info-row {
-            display: flex; justify-content: space-between; color: #777;
-            font-size: 0.9rem; padding: 0.5rem 0.3rem; border-bottom: 1px dashed #222;
+            display: flex;
+            justify-content: space-between;
+            color: #777;
+            font-size: 0.9rem;
+            padding: 0.5rem 0.3rem;
+            border-bottom: 1px dashed #222;
         }
-        .info-row span:last-child { color: #cfcfcf; font-family: monospace; }
 
         .generate-btn {
-            background: #1c1c1c; border: 1px solid #2e2e2e; color: white;
-            width: 100%; padding: 1.2rem 0; border-radius: 36px; font-size: 1.1rem;
-            font-weight: 480; margin: 1.8rem 0 0.5rem 0; cursor: pointer;
-            transition: all 0.15s; box-shadow: 0 6px 12px rgba(0,0,0,0.8);
+            background: #1c1c1c;
+            border: 1px solid #2e2e2e;
+            color: white;
+            width: 100%;
+            padding: 1.2rem 0;
+            border-radius: 36px;
+            font-size: 1.1rem;
+            font-weight: 480;
+            margin: 1.8rem 0 0.5rem 0;
+            cursor: pointer;
+            transition: all 0.15s;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.8);
         }
-        .generate-btn:hover:not(:disabled) { background: #262626; border-color: #4b4b4b; }
-        .generate-btn:disabled { opacity: 0.3; pointer-events: none; }
 
-        /* right panel */
+        .generate-btn:hover:not(:disabled) {
+            background: #262626;
+            border-color: #4b4b4b;
+        }
+
+        .generate-btn:disabled {
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
         .right-panel {
-            flex: 1; background: #050505; padding: 2rem 2.5rem;
-            display: flex; flex-direction: column; overflow: hidden;
+            flex: 1;
+            background: #050505;
+            padding: 2rem 2.5rem;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
         }
+
         .proxy-result {
-            background: #0e0e0e; border: 1px solid #202020; border-radius: 26px;
-            padding: 2.5rem 2.5rem; display: flex; flex-direction: column;
-            box-shadow: 0 15px 30px rgba(0,0,0,0.8); height: fit-content;
+            background: #0e0e0e;
+            border: 1px solid #202020;
+            border-radius: 26px;
+            padding: 2.5rem 2.5rem;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.8);
+            height: fit-content;
         }
-        .proxy-port-large { font-size: 4rem; font-weight: 450; letter-spacing: -2px; color: white; line-height: 1.1; }
-        .proxy-ip-small { font-size: 1.4rem; font-weight: 300; color: #8a8a8a; margin-top: 0.25rem; letter-spacing: -0.5px; }
-        .divider-light { height: 1px; background: #232323; margin: 2rem 0 2rem 0; width: 100%; }
-        .geo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.8rem 2.5rem; }
-        .geo-item { display: flex; flex-direction: column; gap: 0.3rem; }
-        .geo-label { font-size: 0.7rem; text-transform: uppercase; color: #5e5e5e; font-weight: 500; }
-        .geo-value { font-size: 1.2rem; font-weight: 400; color: #e2e2e2; display: flex; align-items: center; gap: 8px; }
-        .geo-value img.flag-mini { width: 28px; height: 21px; border-radius: 3px; border: 1px solid #3d3d3d; }
-        .loading-overlay { display: flex; align-items: center; justify-content: center; color: #aaa; gap: 12px; padding: 2.5rem; }
-        .spinner { width: 20px; height: 20px; border: 2px solid #2b2b2b; border-top: 2px solid #7a7a7a; border-radius: 50%; animation: spin 1s infinite linear; }
+
+        .proxy-port-large {
+            font-size: 4rem;
+            font-weight: 450;
+            letter-spacing: -2px;
+            color: white;
+            line-height: 1.1;
+            word-break: break-word;
+        }
+
+        .proxy-ip-small {
+            font-size: 1.4rem;
+            font-weight: 300;
+            color: #8a8a8a;
+            margin-top: 0.25rem;
+        }
+
+        .divider-light {
+            height: 1px;
+            background: #232323;
+            margin: 2rem 0 2rem 0;
+        }
+
+        .geo-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.8rem 2.5rem;
+        }
+
+        .geo-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+        }
+
+        .geo-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            color: #5e5e5e;
+            font-weight: 500;
+        }
+
+        .geo-value {
+            font-size: 1.2rem;
+            font-weight: 400;
+            color: #e2e2e2;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .geo-value img.flag-mini {
+            width: 28px;
+            height: 21px;
+            border-radius: 3px;
+            border: 1px solid #3d3d3d;
+        }
+
+        .loading-overlay {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #aaa;
+            gap: 12px;
+            padding: 2.5rem;
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #2b2b2b;
+            border-top: 2px solid #7a7a7a;
+            border-radius: 50%;
+            animation: spin 1s infinite linear;
+        }
         @keyframes spin { 0% { transform: rotate(0); } 100% { transform: rotate(360deg); } }
-        .error-message { color: #cf7f7f; background: #1f1010; border: 1px solid #442222; padding: 0.7rem 1.2rem; border-radius: 40px; font-size: 0.9rem; }
+
+        .error-message {
+            color: #cf7f7f;
+            background: #1f1010;
+            border: 1px solid #442222;
+            padding: 0.7rem 1.2rem;
+            border-radius: 40px;
+            font-size: 0.9rem;
+        }
     </style>
 </head>
 <body>
 <div class="app" id="app">
-    <!-- LOGIN SCREEN with loading steps -->
+    <!-- LOGIN SCREEN WITH STEP LOADER -->
     <div class="login-screen" id="loginScreen">
         <div class="login-card" id="loginCard">
             <h1>batproxy</h1>
@@ -334,44 +516,39 @@
             <input type="text" class="key-input" id="apiKeyInput" placeholder="enter your api key" value="test-key-123" autocomplete="off">
             <button class="login-btn" id="loginBtn">→ access panel</button>
 
-            <!-- step loader (hidden by default) -->
-            <div id="stepLoader" class="login-steps" style="display: none; margin-top: 24px;">
-                <div class="step-row" id="stepDecode">
-                    <span class="step-indicator" id="indicatorDecode">1</span>
-                    <span class="step-label">Decode API key</span>
-                    <span class="step-status" id="statusDecode">waiting</span>
+            <!-- Step loader (hidden by default) -->
+            <div id="stepLoader" class="step-loader hidden">
+                <div class="step" id="stepDecode">
+                    <div class="step-indicator"><span>1</span></div>
+                    <div class="step-text">decoding key <small id="stepDecodeMsg"></small></div>
                 </div>
-                <div class="step-row" id="stepCountries">
-                    <span class="step-indicator" id="indicatorCountries">2</span>
-                    <span class="step-label">Fetch available countries</span>
-                    <span class="step-status" id="statusCountries">waiting</span>
+                <div class="step" id="stepCountries">
+                    <div class="step-indicator"><span>2</span></div>
+                    <div class="step-text">fetching countries <small id="stepCountriesMsg"></small></div>
                 </div>
-                <div class="step-row" id="stepFlags">
-                    <span class="step-indicator" id="indicatorFlags">3</span>
-                    <span class="step-label">Load country flags</span>
-                    <span class="step-status" id="statusFlags">waiting</span>
+                <div class="step" id="stepFlags">
+                    <div class="step-indicator"><span>3</span></div>
+                    <div class="step-text">loading flags <small id="stepFlagsMsg"></small></div>
                 </div>
-                <div class="step-row" id="stepReady">
-                    <span class="step-indicator" id="indicatorReady">4</span>
-                    <span class="step-label">Initialize dashboard</span>
-                    <span class="step-status" id="statusReady">waiting</span>
+                <div class="step" id="stepReady">
+                    <div class="step-indicator"><span>4</span></div>
+                    <div class="step-text">ready <small>initializing</small></div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- MAIN DASHBOARD -->
+    <!-- DASHBOARD -->
     <div class="dashboard" id="dashboard">
         <div class="bar">
             <div class="logo">batproxy <span>// secure</span></div>
             <div class="key-badge" id="keyBadge">
                 <span class="dot"></span>
-                <span class="username-badge" id="usernameDisplay">……</span>
+                <span class="username" id="usernameDisplay">…</span>
             </div>
         </div>
 
         <div class="main-panel">
-            <!-- left panel -->
             <div class="left-panel">
                 <div>
                     <div class="section-label">01 · egress</div>
@@ -385,12 +562,9 @@
                 <div style="margin-top: auto; font-size:0.7rem; color:#303030; text-align:center;">decodo · outbound</div>
             </div>
 
-            <!-- right panel -->
             <div class="right-panel">
                 <div class="proxy-result" id="proxyResult">
-                    <div class="loading-overlay">
-                        <div class="spinner"></div> <span>awaiting generation</span>
-                    </div>
+                    <div class="loading-overlay"><div class="spinner"></div> <span>awaiting generation</span></div>
                 </div>
             </div>
         </div>
@@ -399,11 +573,11 @@
 
 <script>
     (function() {
-        // --- configuration
+        // --- config
         const BASE_URL = 'https://proxy-api-zeta.vercel.app';
         const FLAG_CODES_URL = 'https://flagcdn.com/en/codes.json';
 
-        // DOM elements
+        // DOM
         const loginScreen = document.getElementById('loginScreen');
         const dashboard = document.getElementById('dashboard');
         const apiKeyInput = document.getElementById('apiKeyInput');
@@ -412,21 +586,14 @@
         const generateBtn = document.getElementById('generateBtn');
         const proxyResultDiv = document.getElementById('proxyResult');
         const dropdownContainer = document.getElementById('countryDropdownContainer');
-
-        // step elements
         const stepLoader = document.getElementById('stepLoader');
         const stepDecode = document.getElementById('stepDecode');
         const stepCountries = document.getElementById('stepCountries');
         const stepFlags = document.getElementById('stepFlags');
         const stepReady = document.getElementById('stepReady');
-        const indicatorDecode = document.getElementById('indicatorDecode');
-        const indicatorCountries = document.getElementById('indicatorCountries');
-        const indicatorFlags = document.getElementById('indicatorFlags');
-        const indicatorReady = document.getElementById('indicatorReady');
-        const statusDecode = document.getElementById('statusDecode');
-        const statusCountries = document.getElementById('statusCountries');
-        const statusFlags = document.getElementById('statusFlags');
-        const statusReady = document.getElementById('statusReady');
+        const stepDecodeMsg = document.getElementById('stepDecodeMsg');
+        const stepCountriesMsg = document.getElementById('stepCountriesMsg');
+        const stepFlagsMsg = document.getElementById('stepFlagsMsg');
 
         // state
         let apiKey = '';
@@ -436,104 +603,90 @@
         let countriesFull = [];
         let selectedCountryCode = 'bs';
 
+        // --- helper: decode base64 api key -> extract username
+        function extractUsernameFromKey(key) {
+            try {
+                const decoded = atob(key);
+                // format: u-<username>-k-<64hex> 
+                const match = decoded.match(/^u-([a-zA-Z0-9_.-]+)-k-/);
+                if (match && match[1]) return match[1];
+                return 'unknown';
+            } catch (e) {
+                return 'unknown';
+            }
+        }
+
         // --- cookie helpers
         function setCookie(name, value, days) {
-            const d = new Date();
-            d.setTime(d.getTime() + (days * 24 * 60 * 60 * 1000));
-            document.cookie = `${name}=${value};expires=${d.toUTCString()};path=/;SameSite=Strict`;
+            const d = new Date(); d.setTime(d.getTime() + days*24*60*60*1000);
+            document.cookie = `${name}=${value};path=/;SameSite=Strict`;
         }
         function getCookie(name) {
             const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
             return match ? match[2] : null;
         }
 
-        // --- decode base64 api key -> username
-        function decodeUsernameFromKey(key) {
-            // keys are base64 encoded strings like: u-rec-k-31c006c...
-            // after decoding we expect something like "u-rec-k-31c0..."
-            // but actually the base64 decodes to a string that starts with u-<username>-k-<hash>
-            try {
-                const decoded = atob(key);
-                // format: u-<username>-k-<hash>
-                const match = decoded.match(/^u-([a-zA-Z0-9_.-]+)-k-/);
-                if (match && match[1]) return match[1];
-                else return 'usr'; // fallback
-            } catch (e) {
-                console.warn('not valid base64, showing truncated key');
-                return null; // not base64
-            }
-        }
-
-        // --- update steps UI
-        function setStep(section, state, msg) {
-            const indicatorMap = {
-                decode: indicatorDecode, countries: indicatorCountries,
-                flags: indicatorFlags, ready: indicatorReady
-            };
-            const statusMap = {
-                decode: statusDecode, countries: statusCountries,
-                flags: statusFlags, ready: statusReady
-            };
-            const indicator = indicatorMap[section];
-            const statusSpan = statusMap[section];
-            if (!indicator || !statusSpan) return;
-
-            if (state === 'active') {
-                indicator.classList.add('active');
-                indicator.classList.remove('done');
-                indicator.innerText = '→';
-                statusSpan.innerText = msg || 'in progress';
-            } else if (state === 'done') {
-                indicator.classList.remove('active');
-                indicator.classList.add('done');
-                indicator.innerText = '✓';
-                statusSpan.innerText = msg || 'done';
-            } else if (state === 'waiting') {
-                indicator.classList.remove('active', 'done');
-                indicator.innerText = section === 'decode' ? '1' : section === 'countries' ? '2' : section === 'flags' ? '3' : '4';
-                statusSpan.innerText = msg || 'waiting';
-            }
-        }
-
-        // --- reset steps
+        // --- set step state
         function resetSteps() {
-            setStep('decode', 'waiting');
-            setStep('countries', 'waiting');
-            setStep('flags', 'waiting');
-            setStep('ready', 'waiting');
+            [stepDecode, stepCountries, stepFlags, stepReady].forEach(s => {
+                s.classList.remove('active', 'done');
+            });
+        }
+        function setStepActive(stepEl, msg = '') {
+            stepEl.classList.add('active');
+            stepEl.classList.remove('done');
+            const msgSpan = stepEl.querySelector('small');
+            if (msgSpan) msgSpan.innerText = msg;
+        }
+        function setStepDone(stepEl, msg = '') {
+            stepEl.classList.remove('active');
+            stepEl.classList.add('done');
+            const msgSpan = stepEl.querySelector('small');
+            if (msgSpan) msgSpan.innerText = msg;
         }
 
-        // --- load flag mapping
+        // --- load flag mapping (with step update)
         async function loadFlagMapping() {
             try {
+                setStepActive(stepFlags, 'fetching flag index...');
                 const res = await fetch(FLAG_CODES_URL);
                 if (!res.ok) throw new Error();
                 const data = await res.json();
                 countryNameMap = new Map(Object.entries(data));
+                setStepDone(stepFlags, 'loaded');
             } catch (e) {
+                setStepDone(stepFlags, 'fallback');
                 console.warn('flagcdn failed');
             }
         }
 
-        // --- fetch countries from proxy api
+        // --- fetch countries
         async function fetchCountries(key) {
-            const res = await fetch(`${BASE_URL}/proxy/countries`, {
-                headers: { 'x-api-key': key }
-            });
-            if (!res.ok) throw new Error(`status ${res.status}`);
-            const json = await res.json();
-            return json.countries || [];
+            try {
+                setStepActive(stepCountries, 'contacting api...');
+                const res = await fetch(`${BASE_URL}/proxy/countries`, {
+                    headers: { 'x-api-key': key }
+                });
+                if (!res.ok) throw new Error(`status ${res.status}`);
+                const json = await res.json();
+                const codes = json.countries || [];
+                setStepDone(stepCountries, `${codes.length} countries`);
+                return codes;
+            } catch (err) {
+                setStepDone(stepCountries, 'failed');
+                throw err;
+            }
         }
 
-        // --- render custom dropdown
-        function renderDropdown(selectedCode = 'bs') {
+        // --- render dropdown (same as before)
+        function renderDropdown(selectedCode) {
             if (!countriesFull.length) {
                 dropdownContainer.innerHTML = `<div class="custom-dropdown"><div class="dropdown-selected"><span>no countries</span></div></div>`;
                 return;
             }
             const getCountryName = (code) => {
-                const found = countriesFull.find(c => c.code === code);
-                return found ? found.name : code.toUpperCase();
+                const f = countriesFull.find(c => c.code === code);
+                return f ? f.name : code.toUpperCase();
             };
             const html = `
                 <div class="custom-dropdown" id="customDropdown">
@@ -548,33 +701,112 @@
                 </div>
             `;
             dropdownContainer.innerHTML = html;
+
             const optionsDiv = document.getElementById('dropdownOptions');
             function renderOptions(filter = '') {
-                const filtered = countriesFull.filter(c => c.name.toLowerCase().includes(filter.toLowerCase()) || c.code.includes(filter.toLowerCase()));
-                optionsDiv.innerHTML = filtered.map(c => `<div class="dropdown-option" data-code="${c.code}"><img src="https://flagcdn.com/w40/${c.code}.png" alt=""><span>${c.name} (${c.code.toUpperCase()})</span></div>`).join('');
+                const filtered = countriesFull.filter(c => 
+                    c.name.toLowerCase().includes(filter.toLowerCase()) || c.code.includes(filter.toLowerCase()));
+                optionsDiv.innerHTML = filtered.map(c => `
+                    <div class="dropdown-option" data-code="${c.code}">
+                        <img src="https://flagcdn.com/w40/${c.code}.png" loading="lazy">
+                        <span>${c.name} (${c.code.toUpperCase()})</span>
+                    </div>
+                `).join('');
             }
             renderOptions('');
+
             const selectedDiv = document.getElementById('dropdownSelected');
             const panel = document.getElementById('dropdownPanel');
             const searchInput = document.getElementById('dropdownSearch');
-            selectedDiv.addEventListener('click', (e) => { e.stopPropagation(); panel.classList.toggle('hidden'); if (!panel.classList.contains('hidden')) searchInput.focus(); });
+
+            selectedDiv.addEventListener('click', (e) => {
+                e.stopPropagation();
+                panel.classList.toggle('hidden');
+                if (!panel.classList.contains('hidden')) searchInput.focus();
+            });
             searchInput.addEventListener('input', (e) => renderOptions(e.target.value));
             optionsDiv.addEventListener('click', (e) => {
-                const opt = e.target.closest('.dropdown-option'); if (!opt) return;
+                const opt = e.target.closest('.dropdown-option');
+                if (!opt) return;
                 const code = opt.dataset.code;
                 selectedCountryCode = code;
                 document.getElementById('selectedFlag').src = `https://flagcdn.com/w40/${code}.png`;
                 document.getElementById('selectedCountryText').innerText = `${getCountryName(code)} (${code.toUpperCase()})`;
                 panel.classList.add('hidden');
             });
-            document.addEventListener('click', function close(e) { if (!document.getElementById('customDropdown')?.contains(e.target)) panel?.classList.add('hidden'); });
+            document.addEventListener('click', (e) => {
+                if (!document.getElementById('customDropdown')?.contains(e.target)) {
+                    if (panel) panel.classList.add('hidden');
+                }
+            });
+        }
+
+        // --- full login flow with steps
+        async function performLogin(key) {
+            apiKey = key;
+            // disable button, show loader
+            loginBtn.disabled = true;
+            stepLoader.classList.remove('hidden');
+            resetSteps();
+
+            // step 1: decode
+            setStepActive(stepDecode, 'base64');
+            const extractedUser = extractUsernameFromKey(key);
+            username = extractedUser;
+            setStepDone(stepDecode, `@${extractedUser}`);
+
+            // step 2: fetch countries (with possible error)
+            let codes = [];
+            try {
+                codes = await fetchCountries(key);
+                if (!codes.length) throw new Error('empty list');
+            } catch (err) {
+                setStepDone(stepCountries, 'error');
+                stepReady.classList.add('active'); // show error hint
+                loginBtn.disabled = false;
+                alert('Invalid API key or no countries returned.');
+                return false;
+            }
+            countriesAvailable = codes;
+
+            // step 3: flags (already preloaded but we mark)
+            if (countryNameMap.size === 0) await loadFlagMapping();
+            else setStepDone(stepFlags, 'cached');
+
+            // build full list
+            countriesFull = countriesAvailable.map(code => ({
+                code,
+                name: countryNameMap.get(code) || code.toUpperCase()
+            })).sort((a,b) => a.name.localeCompare(b.name));
+
+            if (countriesFull.some(c => c.code === 'bs')) selectedCountryCode = 'bs';
+            else if (countriesFull.length) selectedCountryCode = countriesFull[0].code;
+
+            // step 4 ready
+            setStepActive(stepReady, 'rendering UI');
+            // update badge with username
+            usernameDisplay.innerText = username;
+
+            // render dropdown
+            renderDropdown(selectedCountryCode);
+
+            // switch to dashboard
+            loginScreen.style.display = 'none';
+            dashboard.style.display = 'flex';
+            proxyResultDiv.innerHTML = `<div class="loading-overlay"><div class="spinner"></div> <span>ready · select country & generate</span></div>`;
+
+            setCookie('batproxy_apikey', apiKey, 7);
+            loginBtn.disabled = false;
+            stepLoader.classList.add('hidden'); // hide loader after transition (dashboard visible)
+            return true;
         }
 
         // --- generate proxy
         async function generateProxy() {
-            if (!selectedCountryCode) return alert('select a country');
+            if (!selectedCountryCode) return alert('select country');
             const port = Math.floor(Math.random() * (49999 - 10000 + 1)) + 10000;
             proxyResultDiv.innerHTML = `<div class="loading-overlay"><div class="spinner"></div> <span>generating proxy …</span></div>`;
+
             try {
                 const res = await fetch(`${BASE_URL}/generate`, {
                     method: 'POST',
@@ -582,18 +814,21 @@
                     body: JSON.stringify({ port, countrycode: selectedCountryCode, duration: 6 })
                 });
                 const data = await res.json();
-                if (!res.ok || !data.success) throw new Error(data.message || 'generation failed');
+                if (!res.ok || !data.success) throw new Error(data.message || 'failed');
+
                 const ip = data.ip;
                 let geo = null;
                 try {
                     const geoRes = await fetch(`https://maxmind.api.iii.vg/?ip=${ip}`);
                     if (geoRes.ok) geo = await geoRes.json();
                 } catch { /* ignore */ }
+
                 const countryName = geo?.country?.name || '—';
                 const countryCode = geo?.country?.iso_code || '';
-                const cityName = geo?.city?.name || '—';
+                const city = geo?.city?.name || '—';
                 const asnOrg = geo?.asn?.organization || '—';
                 const flagUrl = countryCode ? `https://flagcdn.com/w40/${countryCode.toLowerCase()}.png` : '';
+
                 proxyResultDiv.innerHTML = `
                     <div class="proxy-port-large">${data.port}</div>
                     <div class="proxy-ip-small">${data.ip}</div>
@@ -601,7 +836,7 @@
                     <div class="geo-grid">
                         <div class="geo-item"><span class="geo-label">country</span><span class="geo-value">${flagUrl ? `<img src="${flagUrl}" class="flag-mini">` : ''}${countryName} <small>${countryCode}</small></span></div>
                         <div class="geo-item"><span class="geo-label">ISP / ASN</span><span class="geo-value">${asnOrg}</span></div>
-                        <div class="geo-item"><span class="geo-label">city</span><span class="geo-value">${cityName}</span></div>
+                        <div class="geo-item"><span class="geo-label">city</span><span class="geo-value">${city}</span></div>
                         <div class="geo-item"><span class="geo-label">duration</span><span class="geo-value">6 minutes</span></div>
                     </div>
                 `;
@@ -610,94 +845,30 @@
             }
         }
 
-        // --- main login sequence with step UI
-        async function loginWithKey(key) {
-            if (!key) return;
-            // disable input & button, show steps
-            apiKeyInput.disabled = true;
-            loginBtn.disabled = true;
-            stepLoader.style.display = 'block';
-            resetSteps();
-
-            // Step 1: decode
-            setStep('decode', 'active', 'decoding...');
-            let derivedUsername = decodeUsernameFromKey(key);
-            if (!derivedUsername) derivedUsername = 'usr';  // fallback
-            username = derivedUsername;
-            await new Promise(r => setTimeout(r, 300)); // tiny delay for visibility
-            setStep('decode', 'done', `ok (${username})`);
-
-            // Step 2: fetch countries
-            setStep('countries', 'active', 'contacting api...');
-            let codes = [];
-            try {
-                codes = await fetchCountries(key);
-                if (!codes.length) throw new Error('no countries');
-                setStep('countries', 'done', `${codes.length} countries`);
-            } catch (e) {
-                setStep('countries', 'active', 'failed');
-                alert('failed to fetch countries – check api key');
-                apiKeyInput.disabled = false;
-                loginBtn.disabled = false;
-                return;
-            }
-
-            // Step 3: load flags
-            setStep('flags', 'active', 'loading flags...');
-            await loadFlagMapping();  // load names
-            countriesAvailable = codes;
-            countriesFull = countriesAvailable.map(code => ({
-                code,
-                name: countryNameMap.get(code) || code.toUpperCase()
-            })).sort((a,b) => a.name.localeCompare(b.name));
-            if (countriesFull.some(c => c.code === 'bs')) selectedCountryCode = 'bs';
-            else if (countriesFull.length) selectedCountryCode = countriesFull[0].code;
-            setStep('flags', 'done', 'ok');
-
-            // Step 4: render dropdown & dashboard
-            setStep('ready', 'active', 'building ui...');
-            renderDropdown(selectedCountryCode);
-            usernameDisplay.innerText = username;
-            setCookie('batproxy_apikey', key, 7);
-
-            await new Promise(r => setTimeout(r, 400));
-            setStep('ready', 'done', 'ready');
-
-            // switch to dashboard
-            loginScreen.style.display = 'none';
-            dashboard.style.display = 'flex';
-            proxyResultDiv.innerHTML = `<div class="loading-overlay"><div class="spinner"></div> <span>ready · select country & generate</span></div>`;
-
-            // re-enable just in case (hidden)
-            apiKeyInput.disabled = false;
-            loginBtn.disabled = false;
-            stepLoader.style.display = 'none';
-        }
-
-        // --- event listeners
-        loginBtn.addEventListener('click', async () => {
-            const key = apiKeyInput.value.trim();
-            if (!key) return alert('enter api key');
-            await loginWithKey(key);
-        });
-
-        apiKeyInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') loginBtn.click();
-        });
-
-        generateBtn.addEventListener('click', generateProxy);
-
-        // --- bootstrap: cookie check
-        (async () => {
+        // --- bootstrap
+        async function bootstrap() {
+            // preload flag map early (but step will handle if needed)
+            loadFlagMapping().catch(()=>{});
             const cookieKey = getCookie('batproxy_apikey');
             if (cookieKey) {
                 apiKeyInput.value = cookieKey;
-                await loginWithKey(cookieKey);
+                await performLogin(cookieKey);  // shows steps, then dashboard
             } else {
                 loginScreen.style.display = 'flex';
                 dashboard.style.display = 'none';
             }
-        })();
+        }
+
+        // listeners
+        loginBtn.addEventListener('click', async () => {
+            const key = apiKeyInput.value.trim();
+            if (!key) return alert('enter api key');
+            await performLogin(key);
+        });
+        apiKeyInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') loginBtn.click(); });
+        generateBtn.addEventListener('click', generateProxy);
+
+        bootstrap();
     })();
 </script>
 </body>
