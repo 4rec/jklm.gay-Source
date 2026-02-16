@@ -261,7 +261,7 @@
         }
 
         .left-panel {
-            width: 400px;
+            width: 380px;
             background: #0a0a0a;
             border-right: 1px solid #1b1b1b;
             padding: 2rem 1.8rem;
@@ -282,7 +282,7 @@
             font-weight: 500;
         }
 
-        /* country dropdown */
+        /* country dropdown - with emoji flags */
         .custom-dropdown {
             position: relative;
             width: 100%;
@@ -302,12 +302,10 @@
             border: 1px solid #2e2e2e;
         }
 
-        .dropdown-selected img {
-            width: 28px;
-            height: 21px;
-            object-fit: cover;
-            border-radius: 3px;
-            border: 1px solid #3a3a3a;
+        .dropdown-selected .emoji-flag {
+            font-size: 1.8rem;
+            line-height: 1;
+            filter: grayscale(15%);
         }
 
         .dropdown-selected span {
@@ -378,12 +376,11 @@
             background: #222222;
         }
 
-        .dropdown-option img {
+        .dropdown-option .emoji-flag {
+            font-size: 1.6rem;
+            line-height: 1;
             width: 32px;
-            height: 24px;
-            object-fit: cover;
-            border: 1px solid #3d3d3d;
-            border-radius: 3px;
+            text-align: center;
         }
 
         .dropdown-option span {
@@ -439,26 +436,10 @@
             position: relative;
         }
 
-        /* subtle country photo background */
-        .country-bg {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-size: cover;
-            background-position: center 30%;
-            opacity: 0.12;
-            filter: grayscale(80%) brightness(0.3);
-            transition: background-image 0.3s ease;
-            pointer-events: none;
-            z-index: 0;
-        }
-
+        /* proxy result container - background image only inside this card */
         .proxy-result {
-            background: rgba(14, 14, 14, 0.85);
-            backdrop-filter: blur(2px);
-            border: 1px solid #303030;
+            background: #0e0e0e;
+            border: 1px solid #202020;
             border-radius: 26px;
             padding: 2.5rem 2.5rem;
             display: flex;
@@ -467,6 +448,28 @@
             height: fit-content;
             position: relative;
             z-index: 1;
+            overflow: hidden;  /* important for pseudo-element */
+        }
+
+        /* country photo background inside proxy-result only */
+        .proxy-result::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center 30%;
+            opacity: 0.15;
+            filter: grayscale(80%) brightness(0.3);
+            pointer-events: none;
+            z-index: -1;
+            transition: background-image 0.3s ease;
+        }
+
+        .proxy-result.has-bg::before {
+            background-image: var(--bg-url);
         }
 
         .proxy-port-large {
@@ -476,6 +479,8 @@
             color: white;
             line-height: 1.1;
             word-break: break-word;
+            position: relative;
+            z-index: 2;
         }
 
         .proxy-ip-small {
@@ -484,6 +489,8 @@
             color: #b0b0b0;
             margin-top: 0.25rem;
             letter-spacing: -0.5px;
+            position: relative;
+            z-index: 2;
         }
 
         .divider-light {
@@ -491,12 +498,16 @@
             background: #2e2e2e;
             margin: 2rem 0 2rem 0;
             width: 100%;
+            position: relative;
+            z-index: 2;
         }
 
         .geo-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 1.8rem 2.5rem;
+            position: relative;
+            z-index: 2;
         }
 
         .geo-item {
@@ -535,6 +546,8 @@
             color: #aaa;
             gap: 12px;
             padding: 2.5rem;
+            position: relative;
+            z-index: 2;
         }
 
         .spinner {
@@ -555,6 +568,8 @@
             padding: 0.7rem 1.2rem;
             border-radius: 40px;
             font-size: 0.9rem;
+            position: relative;
+            z-index: 2;
         }
     </style>
 </head>
@@ -587,7 +602,7 @@
                 </div>
                 <div class="step-item" id="step3">
                     <span class="step-indicator">3</span>
-                    <span>loading country images</span>
+                    <span>loading country data</span>
                     <span class="step-spinner" id="spinner3" style="display:none;"></span>
                 </div>
             </div>
@@ -622,8 +637,6 @@
             </div>
 
             <div class="right-panel" id="rightPanel">
-                <!-- subtle dynamic background for country photo -->
-                <div class="country-bg" id="countryBg" style="background-image: url('');"></div>
                 <div class="proxy-result" id="proxyResult">
                     <div class="loading-overlay" id="initialLoader">
                         <div class="spinner"></div> <span>awaiting generation</span>
@@ -652,7 +665,6 @@
         const generateBtn = document.getElementById('generateBtn');
         const proxyResultDiv = document.getElementById('proxyResult');
         const dropdownContainer = document.getElementById('countryDropdownContainer');
-        const countryBg = document.getElementById('countryBg');
 
         // step elements
         const step1 = document.getElementById('step1');
@@ -666,8 +678,15 @@
         // state
         let apiKey = '';
         let username = 'user';
-        let countriesFull = [];          // { code, name, photoUrl }
+        let countriesFull = [];          // { code, name, photoUrl, emoji }
         let selectedCountryCode = 'bs';
+
+        // simple mapping of country code to flag emoji (basic support)
+        function getFlagEmoji(code) {
+            const codeUpper = code.toUpperCase();
+            // simple offset to regional indicator symbols
+            return [...codeUpper].map(c => String.fromCodePoint(0x1F1E6 + c.charCodeAt(0) - 65)).join('');
+        }
 
         // --- helper: decode base64 api key to username
         function extractUsernameFromKey(key) {
@@ -697,7 +716,6 @@
             if (step === 3) step3.classList.add('active');
             loadingMessage.innerText = message;
 
-            // spinner visibility
             spinner1.style.display = step === 1 ? 'block' : 'none';
             spinner2.style.display = step === 2 ? 'block' : 'none';
             spinner3.style.display = step === 3 ? 'block' : 'none';
@@ -725,20 +743,25 @@
                     const code = clean[codeIdx]?.toLowerCase();
                     const photo = clean[photoIdx];
                     if (code && name && photo && photo.startsWith('http')) {
-                        countries.push({ code, name, photoUrl: photo });
+                        countries.push({ 
+                            code, 
+                            name, 
+                            photoUrl: photo,
+                            emoji: getFlagEmoji(code)
+                        });
                     }
                 }
                 return countries;
             } catch (e) {
                 console.warn('CSV failed, fallback flagcdn', e);
-                // fallback to flagcdn
                 try {
                     const flagRes = await fetch('https://flagcdn.com/en/codes.json');
                     const flagData = await flagRes.json();
                     return Object.entries(flagData).map(([code, name]) => ({
                         code: code.toLowerCase(),
                         name,
-                        photoUrl: `https://flagcdn.com/w80/${code.toLowerCase()}.png`
+                        photoUrl: `https://flagcdn.com/w80/${code.toLowerCase()}.png`,
+                        emoji: getFlagEmoji(code)
                     }));
                 } catch {
                     return [];
@@ -746,18 +769,16 @@
             }
         }
 
-        // --- render dropdown & set background
+        // --- render dropdown with emoji flags
         function renderDropdown(selectedCode) {
             if (!countriesFull.length) return;
             const selected = countriesFull.find(c => c.code === selectedCode) || countriesFull[0];
             selectedCountryCode = selected.code;
-            // update background image
-            countryBg.style.backgroundImage = `url('${selected.photoUrl}')`;
 
             const html = `
                 <div class="custom-dropdown" id="customDropdown">
                     <div class="dropdown-selected" id="dropdownSelected">
-                        <img src="${selected.photoUrl}" alt="" id="selectedFlag" loading="lazy">
+                        <span class="emoji-flag">${selected.emoji}</span>
                         <span id="selectedCountryText">${selected.name} (${selected.code.toUpperCase()})</span>
                     </div>
                     <div class="dropdown-panel hidden" id="dropdownPanel">
@@ -777,7 +798,7 @@
                 );
                 optionsDiv.innerHTML = filtered.map(c => `
                     <div class="dropdown-option" data-code="${c.code}">
-                        <img src="${c.photoUrl}" alt="" loading="lazy" onerror="this.src='https://flagcdn.com/w80/${c.code}.png'">
+                        <span class="emoji-flag">${c.emoji}</span>
                         <span>${c.name} (${c.code.toUpperCase()})</span>
                     </div>
                 `).join('');
@@ -803,11 +824,9 @@
                 const newSel = countriesFull.find(c => c.code === code);
                 if (newSel) {
                     selectedCountryCode = code;
-                    document.getElementById('selectedFlag').src = newSel.photoUrl;
+                    document.querySelector('#dropdownSelected .emoji-flag').innerText = newSel.emoji;
                     document.getElementById('selectedCountryText').innerText = `${newSel.name} (${code.toUpperCase()})`;
                     panel.classList.add('hidden');
-                    // update background
-                    countryBg.style.backgroundImage = `url('${newSel.photoUrl}')`;
                 }
             });
 
@@ -820,7 +839,6 @@
 
         // --- main loading sequence
         async function loadDashboardData(key) {
-            // show loading screen
             loginScreen.style.display = 'none';
             loadingScreen.style.display = 'flex';
             setStep(1, 'validating API key...');
@@ -828,7 +846,7 @@
             username = extractUsernameFromKey(key);
             apiKey = key;
 
-            // step 1: validate key by fetching proxy countries (minimal call)
+            // step 1: validate
             try {
                 setStep(1, 'contacting proxy API...');
                 const testRes = await fetch(`${BASE_URL}/proxy/countries`, { headers: { 'x-api-key': key } });
@@ -847,12 +865,12 @@
             setStep(2, 'downloading country catalog...');
             let csvCountries = await fetchCountryListFromCSV();
 
-            // step 3: load images (just mapping, images load lazily)
-            setStep(3, 'preparing country data...');
+            // step 3: finalize
+            setStep(3, 'preparing interface...');
             if (csvCountries.length) {
                 countriesFull = csvCountries.sort((a,b) => a.name.localeCompare(b.name));
             } else {
-                // fallback: use proxy codes + flagcdn
+                // ultimate fallback
                 const flagRes = await fetch('https://flagcdn.com/en/codes.json');
                 const flagData = await flagRes.json();
                 const proxyRes = await fetch(`${BASE_URL}/proxy/countries`, { headers: { 'x-api-key': key } });
@@ -861,7 +879,8 @@
                 countriesFull = codes.map(code => ({
                     code: code.toLowerCase(),
                     name: flagData[code.toUpperCase()] || code.toUpperCase(),
-                    photoUrl: `https://flagcdn.com/w80/${code.toLowerCase()}.png`
+                    photoUrl: `https://flagcdn.com/w80/${code.toLowerCase()}.png`,
+                    emoji: getFlagEmoji(code)
                 })).sort((a,b) => a.name.localeCompare(b.name));
             }
 
@@ -872,18 +891,15 @@
                 return false;
             }
 
-            // set default selection
+            // default selection
             if (countriesFull.some(c => c.code === 'bs')) selectedCountryCode = 'bs';
             else selectedCountryCode = countriesFull[0].code;
 
             renderDropdown(selectedCountryCode);
             keyBadgeTrunc.textContent = username;
-
-            // finalize
             setCookie('batproxy_apikey', key, 7);
             proxyResultDiv.innerHTML = `<div class="loading-overlay"><div class="spinner"></div> <span>ready · select country & generate</span></div>`;
 
-            // switch to dashboard
             loadingScreen.style.display = 'none';
             dashboard.style.display = 'flex';
             return true;
@@ -894,6 +910,7 @@
             if (!selectedCountryCode) return alert('select a country');
             const port = Math.floor(Math.random() * (49999 - 10000 + 1)) + 10000;
             proxyResultDiv.innerHTML = `<div class="loading-overlay"><div class="spinner"></div> <span>generating proxy …</span></div>`;
+            proxyResultDiv.classList.remove('has-bg'); // remove any previous bg
 
             try {
                 const res = await fetch(`${BASE_URL}/generate`, {
@@ -917,6 +934,10 @@
                 const asnOrg = geo?.asn?.organization || '—';
                 const flagUrl = countryCode ? `https://flagcdn.com/w40/${countryCode.toLowerCase()}.png` : '';
 
+                // get photo URL for background from selected country (or from geo if available)
+                const bgCountry = countriesFull.find(c => c.code === selectedCountryCode);
+                const bgUrl = bgCountry ? bgCountry.photoUrl : '';
+
                 proxyResultDiv.innerHTML = `
                     <div class="proxy-port-large">${data.port}</div>
                     <div class="proxy-ip-small">${data.ip}</div>
@@ -928,8 +949,14 @@
                         <div class="geo-item"><span class="geo-label">duration</span><span class="geo-value">6 minutes</span></div>
                     </div>
                 `;
+
+                if (bgUrl) {
+                    proxyResultDiv.style.setProperty('--bg-url', `url('${bgUrl}')`);
+                    proxyResultDiv.classList.add('has-bg');
+                }
             } catch (err) {
                 proxyResultDiv.innerHTML = `<div class="error-message">error: ${err.message}</div>`;
+                proxyResultDiv.classList.remove('has-bg');
             }
         }
 
