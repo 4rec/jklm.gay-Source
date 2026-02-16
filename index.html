@@ -1,170 +1,604 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Proxy API Tester</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BatProxy · AMOLED dark</title>
     <style>
-        body { font-family: Arial; padding: 20px; max-width: 800px; margin: 0 auto; }
-        input, button, select { padding: 8px; margin: 5px 0; width: 100%; }
-        .card { border: 1px solid #ccc; padding: 15px; margin: 15px 0; border-radius: 5px; }
-        .response { background: #f4f4f4; padding: 10px; border-radius: 3px; font-family: monospace; white-space: pre-wrap; }
-        .error { color: red; }
-        .success { color: green; }
-        .row { display: flex; gap: 10px; }
-        .row input { flex: 1; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            background-color: #000000;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            padding: 1.5rem;
+            color: #e0e0e0;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+        }
+
+        /* amoled black cards */
+        .card {
+            background: #0c0c0c;
+            border: 1px solid #1f1f1f;
+            border-radius: 24px;
+            padding: 1.8rem 2rem;
+            margin-bottom: 1.8rem;
+            box-shadow: 0 10px 30px -15px rgba(0, 255, 255, 0.15);
+            backdrop-filter: blur(2px);
+            transition: border 0.2s;
+        }
+
+        .card:hover {
+            border-color: #2b7a6e;
+        }
+
+        h1, h2, h3 {
+            font-weight: 500;
+            letter-spacing: -0.02em;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(145deg, #9bfff0, #4bc0b0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.3rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        h1 span {
+            font-size: 2rem;
+            filter: drop-shadow(0 0 6px #00ccbb);
+        }
+
+        .sub {
+            color: #6b6b6b;
+            font-size: 0.9rem;
+            margin-top: -5px;
+            margin-bottom: 20px;
+            border-left: 3px solid #1f7a6b;
+            padding-left: 15px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #8f8f8f;
+            margin-bottom: 6px;
+        }
+
+        input, select, button {
+            background: #1a1a1a;
+            border: 1px solid #2e2e2e;
+            border-radius: 18px;
+            padding: 14px 18px;
+            font-size: 1rem;
+            width: 100%;
+            color: #f0f0f0;
+            transition: all 0.15s ease;
+            outline: none;
+        }
+
+        input:focus, select:focus {
+            border-color: #2dc0aa;
+            box-shadow: 0 0 0 3px rgba(45, 192, 170, 0.15);
+            background: #1f1f1f;
+        }
+
+        button {
+            background: #1b2f2c;
+            border: 1px solid #2e8f81;
+            color: #d4fff6;
+            font-weight: 600;
+            cursor: pointer;
+            width: auto;
+            min-width: 200px;
+            padding: 12px 28px;
+            letter-spacing: 0.3px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+        }
+
+        button:hover {
+            background: #1f403a;
+            border-color: #4ad9c7;
+            color: white;
+            box-shadow: 0 6px 14px rgba(0, 255, 213, 0.2);
+        }
+
+        .flex-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 18px;
+            align-items: flex-end;
+        }
+
+        .api-key-area {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        .api-key-area input {
+            flex: 3;
+        }
+        .api-key-area button {
+            flex: 1;
+            min-width: unset;
+            background: #232323;
+            border-color: #3c3c3c;
+            color: #bebebe;
+        }
+        .api-key-area button:hover {
+            background: #2e2e2e;
+            color: #ffffff;
+        }
+
+        .pill {
+            background: #0f2a26;
+            color: #7ef5e2;
+            padding: 8px 16px;
+            border-radius: 40px;
+            font-size: 0.9rem;
+            border: 1px solid #28655b;
+            display: inline-block;
+        }
+
+        .country-selector {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .select-wrapper {
+            position: relative;
+        }
+        .select-wrapper select {
+            appearance: none;
+            padding: 16px 20px;
+            background: #161616;
+            border-color: #333;
+            font-weight: 400;
+            color: #dddddd;
+        }
+        .dropdown-arrow {
+            position: absolute;
+            right: 22px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+            font-size: 1.2rem;
+            color: #52c2b3;
+        }
+
+        .proxy-result {
+            background: #0b1413;
+            border-radius: 30px;
+            padding: 24px;
+            border: 1px solid #1c504a;
+            margin-top: 25px;
+        }
+
+        .ip-detail-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+            gap: 20px 20px;
+            margin-top: 18px;
+        }
+
+        .detail-item {
+            background: #111d1b;
+            border-radius: 20px;
+            padding: 14px 16px;
+            border-left: 5px solid #2d857a;
+        }
+        .detail-item .label {
+            font-size: 0.7rem;
+            color: #7a9b96;
+            text-transform: uppercase;
+        }
+        .detail-item .value {
+            font-size: 1.2rem;
+            font-weight: 500;
+            color: #d2fffa;
+            word-break: break-word;
+        }
+
+        .flag-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #1a302e;
+            padding: 10px 18px;
+            border-radius: 40px;
+            font-size: 1.2rem;
+            border: 1px solid #3f968b;
+        }
+
+        .error-message {
+            color: #ff8a7a;
+            background: #2e1a1a;
+            border-radius: 18px;
+            padding: 16px;
+            border-left: 6px solid #ff5252;
+        }
+
+        .success-chip {
+            color: #aaffe0;
+            font-size: 1rem;
+        }
+
+        .status-badge {
+            display: inline-block;
+            background: #1d463f;
+            border-radius: 30px;
+            padding: 6px 20px;
+            font-size: 0.85rem;
+            border: 1px solid #319f8d;
+        }
+
+        hr {
+            border: 0.5px solid #262626;
+            margin: 20px 0;
+        }
+
+        .cookies-note {
+            font-size: 0.75rem;
+            color: #5c5c5c;
+            text-align: right;
+        }
     </style>
 </head>
 <body>
-    <h2>Proxy API Tester</h2>
-    
-    <div class="card">
-        <h3>API Key</h3>
-        <input type="text" id="apiKey" placeholder="Enter your API key" value="test-key-123">
-        <small>For key generation, use master key field below</small>
-    </div>
+<div class="container">
+    <div class="card" style="border-color: #2e8b80;">
+        <h1>
+            <span>🦇</span> BATPROXY
+        </h1>
+        <div class="sub">amoled · seamless · proxy generator</div>
 
-    <div class="card">
-        <h3>1. Test Root</h3>
-        <button onclick="testRoot()">GET /</button>
-        <div id="rootResponse" class="response"></div>
-    </div>
-
-    <div class="card">
-        <h3>2. Get Countries</h3>
-        <button onclick="testCountries()">GET /proxy/countries</button>
-        <div id="countriesResponse" class="response"></div>
-    </div>
-
-    <div class="card">
-        <h3>3. Validate Key</h3>
-        <input type="text" id="validateKey" placeholder="Key to validate" value="test-key">
-        <button onclick="testValidateKey()">POST /key/validate</button>
-        <div id="validateResponse" class="response"></div>
-    </div>
-
-    <div class="card">
-        <h3>4. Generate New Key (Requires Master Key)</h3>
-        <input type="text" id="masterKey" placeholder="Master key" value="your-master-key-here">
-        <input type="text" id="username" placeholder="Username" value="testuser">
-        <button onclick="testGenerateKey()">POST /key/generate</button>
-        <div id="generateResponse" class="response"></div>
-    </div>
-
-    <div class="card">
-        <h3>5. Check Port</h3>
-        <div class="row">
-            <input type="number" id="checkPort" placeholder="Port number" value="10001" min="1" max="65535">
+        <!-- API KEY with cookie save -->
+        <div style="margin: 28px 0 16px;">
+            <label>🔑 API KEY (saved to cookies)</label>
+            <div class="api-key-area">
+                <input type="text" id="apiKeyInput" placeholder="enter your api key" value="test-key-123">
+                <button id="saveApiKeyBtn">💾 save</button>
+            </div>
+            <p class="cookies-note" id="cookieStatus">⌛ loading cookie...</p>
         </div>
-        <button onclick="testCheckPort()">POST /checkport</button>
-        <div id="checkPortResponse" class="response"></div>
+
+        <!-- Country dropdown (dynamic) -->
+        <div class="country-selector">
+            <label>🌍 choose target country</label>
+            <div class="select-wrapper">
+                <select id="countrySelect">
+                    <option value="">— loading countries —</option>
+                </select>
+                <span class="dropdown-arrow">▼</span>
+            </div>
+            <div class="flex-row" style="justify-content: space-between; align-items: center;">
+                <button id="refreshCountriesBtn" style="min-width: 140px;">↻ refresh list</button>
+                <span class="pill" id="countryCount">0 countries</span>
+            </div>
+        </div>
     </div>
 
+    <!-- Generate proxy panel -->
     <div class="card">
-        <h3>6. Generate Proxy</h3>
-        <p>Port: random 10001-49999 | Country: BS</p>
-        <button onclick="testGenerateProxy()">POST /generate</button>
-        <div id="proxyResponse" class="response"></div>
+        <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 18px;">
+            <span style="font-size: 1.8rem;">⚡</span>
+            <h2 style="margin:0;">generate proxy</h2>
+            <span class="status-badge">duration: 6 min</span>
+        </div>
+        <p style="color:#aaa; margin-bottom: 22px;">random port 10000–49999 · country from dropdown</p>
+        
+        <button id="generateProxyBtn" style="width: 100%; padding: 18px; font-size: 1.2rem;">🛸 generate now</button>
+
+        <!-- Proxy output area -->
+        <div id="proxyOutput" class="proxy-result" style="display: none;">
+            <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
+                <span class="flag-badge" id="resultFlagEmoji">🏳️</span>
+                <span style="font-size: 1.6rem; font-weight: 600; color:white;" id="resultIp">-</span>
+                <span class="pill" id="resultPort">port: —</span>
+            </div>
+            <hr>
+            <div class="ip-detail-grid" id="ipDetailGrid">
+                <!-- filled dynamically -->
+            </div>
+        </div>
+        <div id="proxyError" class="error-message" style="display: none; margin-top: 20px;"></div>
     </div>
 
-    <script>
+    <!-- small root + validate demo (optional) but not needed, but keep minimal -->
+    <div style="display: flex; gap: 12px; justify-content: flex-end;">
+        <span style="color:#3a3a3a;">🔮 proxy-api • v1</span>
+    </div>
+</div>
+
+<script>
+    (function() {
+        // --- constants ---
         const BASE_URL = 'https://proxy-api-zeta.vercel.app';
+        const FLAG_CODES_URL = 'https://flagcdn.com/en/codes.json';
+        const IP_LOOKUP_BASE = 'https://nyanc4tt.xyz/api/iplookup?ip=';
 
-        async function apiCall(endpoint, options = {}) {
-            try {
-                const res = await fetch(`${BASE_URL}${endpoint}`, options);
-                const text = await res.text();
-                try {
-                    return { ok: res.ok, data: JSON.parse(text), status: res.status };
-                } catch {
-                    return { ok: res.ok, data: text, status: res.status };
-                }
-            } catch (err) {
-                return { ok: false, error: err.message };
-            }
+        // --- DOM elements ---
+        const apiKeyInput = document.getElementById('apiKeyInput');
+        const saveApiKeyBtn = document.getElementById('saveApiKeyBtn');
+        const cookieStatus = document.getElementById('cookieStatus');
+        const countrySelect = document.getElementById('countrySelect');
+        const refreshCountriesBtn = document.getElementById('refreshCountriesBtn');
+        const countryCountSpan = document.getElementById('countryCount');
+        const generateProxyBtn = document.getElementById('generateProxyBtn');
+        const proxyOutput = document.getElementById('proxyOutput');
+        const proxyError = document.getElementById('proxyError');
+        const resultFlagEmoji = document.getElementById('resultFlagEmoji');
+        const resultIp = document.getElementById('resultIp');
+        const resultPort = document.getElementById('resultPort');
+        const ipDetailGrid = document.getElementById('ipDetailGrid');
+
+        // --- state ---
+        let availableCountries = [];           // array of country codes from /proxy/countries
+        let countryFullNames = {};              // map code -> name (from flagcdn)
+        let combinedOptions = [];                // { code, name } for dropdown
+
+        // --- cookie helpers (AMOLED smooth)---
+        function setCookie(name, value, days = 30) {
+            const d = new Date();
+            d.setTime(d.getTime() + (days * 24 * 60 * 60 * 1000));
+            document.cookie = `${name}=${encodeURIComponent(value)}; expires=${d.toUTCString()}; path=/; SameSite=Lax`;
         }
 
-        function displayResponse(elementId, result) {
-            const el = document.getElementById(elementId);
-            if (result.error) {
-                el.innerHTML = `<span class="error">Error: ${result.error}</span>`;
+        function getCookie(name) {
+            const cookies = document.cookie.split('; ');
+            for (let c of cookies) {
+                const [key, val] = c.split('=');
+                if (key === name) return decodeURIComponent(val);
+            }
+            return null;
+        }
+
+        // load api key from cookie
+        const savedKey = getCookie('batproxy_apikey');
+        if (savedKey) {
+            apiKeyInput.value = savedKey;
+            cookieStatus.innerText = '✅ api key loaded from cookie';
+        } else {
+            cookieStatus.innerText = '💤 no saved key — enter and save';
+        }
+
+        saveApiKeyBtn.addEventListener('click', () => {
+            const key = apiKeyInput.value.trim();
+            if (key) {
+                setCookie('batproxy_apikey', key);
+                cookieStatus.innerText = '🔒 key saved to cookies (30 days)';
             } else {
-                const status = result.status ? `Status: ${result.status}\n\n` : '';
-                el.innerHTML = `<span class="${result.ok ? 'success' : 'error'}">${status}${JSON.stringify(result.data, null, 2)}</span>`;
+                alert('cannot save empty key');
             }
-        }
+        });
 
-        async function testRoot() {
-            const result = await apiCall('/');
-            displayResponse('rootResponse', result);
-        }
-
-        async function testCountries() {
-            const apiKey = document.getElementById('apiKey').value;
-            const result = await apiCall('/proxy/countries', {
+        // --- fetch countries from proxy-api (with api key header) ---
+        async function fetchProxyCountries(apiKey) {
+            if (!apiKey) throw new Error('API key missing');
+            const res = await fetch(`${BASE_URL}/proxy/countries`, {
                 headers: { 'x-api-key': apiKey }
             });
-            displayResponse('countriesResponse', result);
-        }
-
-        async function testValidateKey() {
-            const key = document.getElementById('validateKey').value;
-            const result = await apiCall('/key/validate', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 'auth-key': key })
-            });
-            displayResponse('validateResponse', result);
-        }
-
-        async function testGenerateKey() {
-            const masterKey = document.getElementById('masterKey').value;
-            const username = document.getElementById('username').value;
-            
-            const result = await apiCall('/key/generate', {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'x-api-key': masterKey
-                },
-                body: JSON.stringify({ username: username })
-            });
-            displayResponse('generateResponse', result);
-            
-            if (result.ok && result.data.apikey) {
-                document.getElementById('apiKey').value = result.data.apikey;
+            if (!res.ok) {
+                const errText = await res.text();
+                throw new Error(`proxy countries error (${res.status}): ${errText}`);
+            }
+            const data = await res.json();
+            // data = { "countries": ["ca","bm",...] }
+            if (data && Array.isArray(data.countries)) {
+                return data.countries.map(c => c.toLowerCase().trim());
+            } else {
+                throw new Error('unexpected response format');
             }
         }
 
-        async function testCheckPort() {
-            const port = document.getElementById('checkPort').value;
-            
-            const result = await apiCall('/checkport', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ port: parseInt(port) })
-            });
-            displayResponse('checkPortResponse', result);
+        // --- fetch flag mapping ---
+        async function fetchFlagNames() {
+            const res = await fetch(FLAG_CODES_URL);
+            if (!res.ok) throw new Error('failed to fetch flag codes');
+            return await res.json();   // { "ad": "Andorra", ... }
         }
 
-        async function testGenerateProxy() {
-            const apiKey = document.getElementById('apiKey').value;
-            const port = Math.floor(Math.random() * (49999 - 10001 + 1)) + 10001;
-            
-            const result = await apiCall('/generate', {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'x-api-key': apiKey
-                },
-                body: JSON.stringify({
-                    port: port,
-                    countrycode: 'BS',
-                    duration: 300
-                })
+        // --- populate dropdown with intersection (proxy countries ∩ flag names) ---
+        function buildDropdown() {
+            if (!availableCountries.length || !Object.keys(countryFullNames).length) {
+                countrySelect.innerHTML = '<option value="">— unavailable —</option>';
+                countryCountSpan.innerText = '0 countries';
+                return;
+            }
+            // filter codes that exist in flag db (and availableCountries)
+            const valid = availableCountries.filter(code => countryFullNames.hasOwnProperty(code));
+            combinedOptions = valid.map(code => ({
+                code: code,
+                name: countryFullNames[code] || code.toUpperCase()
+            })).sort((a,b) => a.name.localeCompare(b.name));
+
+            if (combinedOptions.length === 0) {
+                countrySelect.innerHTML = '<option value="">— no matches —</option>';
+                countryCountSpan.innerText = '0 countries';
+                return;
+            }
+
+            let html = '<option value="">— select country —</option>';
+            combinedOptions.forEach(opt => {
+                html += `<option value="${opt.code}">${opt.name} (${opt.code.toUpperCase()})</option>`;
             });
-            displayResponse('proxyResponse', result);
+            countrySelect.innerHTML = html;
+            countryCountSpan.innerText = `${combinedOptions.length} countries`;
         }
 
-        document.getElementById('masterKey').placeholder = 'Enter master key from code';
-    </script>
+        // --- refresh countries: call both apis, combine ---
+        async function refreshCountryList() {
+            const key = apiKeyInput.value.trim();
+            if (!key) {
+                alert('please enter/save an API key first');
+                return;
+            }
+            // disable button
+            refreshCountriesBtn.disabled = true;
+            refreshCountriesBtn.innerText = '⏳ loading...';
+            proxyError.style.display = 'none';
+            try {
+                const [countries, flagMap] = await Promise.all([
+                    fetchProxyCountries(key),
+                    fetchFlagNames()
+                ]);
+                availableCountries = countries;
+                countryFullNames = flagMap;
+                buildDropdown();
+            } catch (err) {
+                console.error(err);
+                proxyError.style.display = 'block';
+                proxyError.innerText = `❌ failed to load countries: ${err.message}`;
+                countrySelect.innerHTML = '<option value="">— error —</option>';
+                countryCountSpan.innerText = 'error';
+            } finally {
+                refreshCountriesBtn.disabled = false;
+                refreshCountriesBtn.innerText = '↻ refresh list';
+            }
+        }
+
+        refreshCountriesBtn.addEventListener('click', refreshCountryList);
+
+        // --- generate proxy ---
+        async function generateProxy() {
+            // reset display
+            proxyOutput.style.display = 'none';
+            proxyError.style.display = 'none';
+
+            const apiKey = apiKeyInput.value.trim();
+            if (!apiKey) {
+                proxyError.style.display = 'block';
+                proxyError.innerText = '❌ API key missing. enter and save.';
+                return;
+            }
+
+            const selectedCode = countrySelect.value;
+            if (!selectedCode) {
+                proxyError.style.display = 'block';
+                proxyError.innerText = '❌ please select a country from dropdown.';
+                return;
+            }
+
+            // random port 10000-49999
+            const port = Math.floor(Math.random() * (49999 - 10000 + 1)) + 10000;
+
+            try {
+                // POST /generate
+                const genRes = await fetch(`${BASE_URL}/generate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-api-key': apiKey
+                    },
+                    body: JSON.stringify({
+                        port: port,
+                        countrycode: selectedCode,
+                        duration: 6          // fixed 6 minutes
+                    })
+                });
+
+                if (!genRes.ok) {
+                    const errText = await genRes.text();
+                    throw new Error(`generate failed (${genRes.status}): ${errText}`);
+                }
+
+                const genData = await genRes.json();   // { ip, port, success, duration? }
+                if (!genData.success) {
+                    throw new Error('proxy generation returned success=false');
+                }
+                const proxyIp = genData.ip;
+                const proxyPort = genData.port;   // should match our port
+
+                // now lookup ip details
+                const lookupRes = await fetch(`${IP_LOOKUP_BASE}${proxyIp}`);
+                if (!lookupRes.ok) {
+                    throw new Error(`IP lookup failed (${lookupRes.status})`);
+                }
+                const ipInfo = await lookupRes.json();  // includes flag_emoji, country, isp, city, region etc.
+
+                // render result
+                renderProxyResult(proxyIp, proxyPort, ipInfo);
+            } catch (err) {
+                proxyError.style.display = 'block';
+                proxyError.innerText = `🔥 ${err.message}`;
+            }
+        }
+
+        function renderProxyResult(ip, port, info) {
+            // fill flag/ip/port
+            resultFlagEmoji.innerHTML = info.flag_emoji || '🏳️';
+            resultIp.innerText = ip;
+            resultPort.innerText = `port: ${port}`;
+
+            // build grid
+            const fields = [
+                { label: 'Country', value: info.country || '?' },
+                { label: 'City', value: info.city || '?' },
+                { label: 'Region', value: info.region || '?' },
+                { label: 'ISP', value: info.isp || '?' },
+                { label: 'ASN', value: info.asn || '?' },
+                { label: 'Continent', value: info.continent || '?' },
+                { label: 'Postal', value: info.postal || 'N/A' },
+                { label: 'Lat / Lon', value: info.latitude && info.longitude ? `${info.latitude}, ${info.longitude}` : '?' }
+            ];
+
+            ipDetailGrid.innerHTML = fields.map(f => 
+                `<div class="detail-item"><span class="label">${f.label}</span><div class="value">${f.value}</div></div>`
+            ).join('');
+
+            proxyOutput.style.display = 'block';
+        }
+
+        generateProxyBtn.addEventListener('click', generateProxy);
+
+        // initial load: try to fetch countries if api key exists (optional, but nice)
+        (async function initialLoad() {
+            const initialKey = apiKeyInput.value.trim();
+            if (initialKey) {
+                try {
+                    refreshCountriesBtn.disabled = true;
+                    refreshCountriesBtn.innerText = '⏳';
+                    const [countries, flagMap] = await Promise.all([
+                        fetchProxyCountries(initialKey).catch(e => { throw e; }),
+                        fetchFlagNames()
+                    ]);
+                    availableCountries = countries;
+                    countryFullNames = flagMap;
+                    buildDropdown();
+                } catch (e) {
+                    console.warn('initial load failed', e);
+                    // non blocking
+                } finally {
+                    refreshCountriesBtn.disabled = false;
+                    refreshCountriesBtn.innerText = '↻ refresh list';
+                }
+            } else {
+                // still load flag names to have them ready (and empty dropdown)
+                try {
+                    countryFullNames = await fetchFlagNames();
+                } catch (e) {}
+                buildDropdown();   // will show empty because availableCountries empty
+            }
+        })();
+
+    })();
+</script>
 </body>
 </html>
