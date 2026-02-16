@@ -282,7 +282,7 @@
             font-weight: 500;
         }
 
-        /* country dropdown - with emoji flags */
+        /* country dropdown - with flag images (non-wavy, fixed size) */
         .custom-dropdown {
             position: relative;
             width: 100%;
@@ -294,7 +294,7 @@
         .dropdown-selected {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
             padding: 0.9rem 1.2rem;
             cursor: pointer;
             background: #0c0c0c;
@@ -302,10 +302,12 @@
             border: 1px solid #2e2e2e;
         }
 
-        .dropdown-selected .emoji-flag {
-            font-size: 1.8rem;
-            line-height: 1;
-            filter: grayscale(15%);
+        .dropdown-selected img {
+            width: 28px;
+            height: 21px;
+            object-fit: cover;          /* keeps aspect ratio, no stretching/waving */
+            border-radius: 2px;
+            border: 1px solid #3a3a3a;
         }
 
         .dropdown-selected span {
@@ -376,11 +378,12 @@
             background: #222222;
         }
 
-        .dropdown-option .emoji-flag {
-            font-size: 1.6rem;
-            line-height: 1;
-            width: 32px;
-            text-align: center;
+        .dropdown-option img {
+            width: 28px;
+            height: 21px;
+            object-fit: cover;
+            border: 1px solid #3d3d3d;
+            border-radius: 2px;
         }
 
         .dropdown-option span {
@@ -448,7 +451,7 @@
             height: fit-content;
             position: relative;
             z-index: 1;
-            overflow: hidden;  /* important for pseudo-element */
+            overflow: hidden;
         }
 
         /* country photo background inside proxy-result only */
@@ -597,12 +600,12 @@
                 </div>
                 <div class="step-item" id="step2">
                     <span class="step-indicator">2</span>
-                    <span>fetching country list</span>
+                    <span>fetching available countries</span>
                     <span class="step-spinner" id="spinner2" style="display:none;"></span>
                 </div>
                 <div class="step-item" id="step3">
                     <span class="step-indicator">3</span>
-                    <span>loading country data</span>
+                    <span>loading country details</span>
                     <span class="step-spinner" id="spinner3" style="display:none;"></span>
                 </div>
             </div>
@@ -651,6 +654,7 @@
     (function() {
         // config
         const BASE_URL = 'https://proxy-api-zeta.vercel.app';
+        // We no longer fetch CSV for dropdown; only for photos if needed.
         const CSV_URL = 'https://jklm.gay/list.csv';
 
         // screens
@@ -678,15 +682,8 @@
         // state
         let apiKey = '';
         let username = 'user';
-        let countriesFull = [];          // { code, name, photoUrl, emoji }
-        let selectedCountryCode = 'bs';
-
-        // simple mapping of country code to flag emoji (basic support)
-        function getFlagEmoji(code) {
-            const codeUpper = code.toUpperCase();
-            // simple offset to regional indicator symbols
-            return [...codeUpper].map(c => String.fromCodePoint(0x1F1E6 + c.charCodeAt(0) - 65)).join('');
-        }
+        let countriesList = [];          // will be populated from API: [{ code, name, photoUrl }]
+        let selectedCountryCode = '';
 
         // --- helper: decode base64 api key to username
         function extractUsernameFromKey(key) {
@@ -721,64 +718,83 @@
             spinner3.style.display = step === 3 ? 'block' : 'none';
         }
 
-        // --- fetch and parse CSV
-        async function fetchCountryListFromCSV() {
+        // --- fetch country list from API, then enrich with names/photos from CSV/flagcdn
+        async function loadCountryDataFromAPI(key) {
+            // step 2: get codes from proxy/countries
+            setStep(2, 'fetching country codes from API...');
+            let apiCodes = [];
             try {
-                const response = await fetch(CSV_URL);
-                if (!response.ok) throw new Error('CSV fetch failed');
-                const csvText = await response.text();
-                const lines = csvText.split('\n').filter(l => l.trim());
-                const headers = lines[0].split(',').map(h => h.trim());
-                const nameIdx = headers.indexOf('English short name');
-                const codeIdx = headers.indexOf('Alpha-2 code');
-                const photoIdx = headers.indexOf('PhotoUrl');
-                if (nameIdx === -1 || codeIdx === -1 || photoIdx === -1) throw new Error('CSV format');
+                const res = await fetch(`${BASE_URL}/proxy/countries`, { headers: { 'x-api-key': key } });
+                if (!res.ok) throw new Error(`API error ${res.status}`);
+                const data = await res.json();
+                apiCodes = data.countries || [];
+                if (!apiCodes.length) throw new Error('No countries returned');
+            } catch (e) {
+                throw new Error('Failed to fetch country list from API');
+            }
 
-                const countries = [];
-                for (let i = 1; i < lines.length; i++) {
-                    const parts = lines[i].match(/(".*?"|[^,]+)(?=\s*,|\s*$)/g) || [];
-                    const clean = parts.map(p => p.replace(/^"|"$/g, '').trim());
-                    if (clean.length <= Math.max(nameIdx, codeIdx, photoIdx)) continue;
-                    const name = clean[nameIdx];
-                    const code = clean[codeIdx]?.toLowerCase();
-                    const photo = clean[photoIdx];
-                    if (code && name && photo && photo.startsWith('http')) {
-                        countries.push({ 
-                            code, 
-                            name, 
-                            photoUrl: photo,
-                            emoji: getFlagEmoji(code)
-                        });
+            // step 3: enrich codes with names and photos
+            setStep(3, 'enriching with country names and photos...');
+            // First, try to get full data from CSV (includes photos)
+            let csvMap = new Map(); // code -> { name, photoUrl }
+            try {
+                const csvRes = await fetch(CSV_URL);
+                if (csvRes.ok) {
+                    const csvText = await csvRes.text();
+                    const lines = csvText.split('\n').filter(l => l.trim());
+                    const headers = lines[0].split(',').map(h => h.trim());
+                    const nameIdx = headers.indexOf('English short name');
+                    const codeIdx = headers.indexOf('Alpha-2 code');
+                    const photoIdx = headers.indexOf('PhotoUrl');
+                    if (nameIdx !== -1 && codeIdx !== -1 && photoIdx !== -1) {
+                        for (let i = 1; i < lines.length; i++) {
+                            const parts = lines[i].match(/(".*?"|[^,]+)(?=\s*,|\s*$)/g) || [];
+                            const clean = parts.map(p => p.replace(/^"|"$/g, '').trim());
+                            if (clean.length <= Math.max(nameIdx, codeIdx, photoIdx)) continue;
+                            const code = clean[codeIdx]?.toLowerCase();
+                            const name = clean[nameIdx];
+                            const photo = clean[photoIdx];
+                            if (code && name && photo) csvMap.set(code, { name, photoUrl: photo });
+                        }
                     }
                 }
-                return countries;
-            } catch (e) {
-                console.warn('CSV failed, fallback flagcdn', e);
-                try {
-                    const flagRes = await fetch('https://flagcdn.com/en/codes.json');
-                    const flagData = await flagRes.json();
-                    return Object.entries(flagData).map(([code, name]) => ({
-                        code: code.toLowerCase(),
-                        name,
-                        photoUrl: `https://flagcdn.com/w80/${code.toLowerCase()}.png`,
-                        emoji: getFlagEmoji(code)
-                    }));
-                } catch {
-                    return [];
+            } catch (e) { /* ignore CSV errors, fallback to flagcdn */ }
+
+            // Build final countriesList using API codes
+            const enriched = [];
+            for (const code of apiCodes) {
+                const lowerCode = code.toLowerCase();
+                let name = code.toUpperCase();
+                let photoUrl = `https://flagcdn.com/w80/${lowerCode}.png`; // default flag
+                if (csvMap.has(lowerCode)) {
+                    name = csvMap.get(lowerCode).name;
+                    photoUrl = csvMap.get(lowerCode).photoUrl; // use CSV photo if available
+                } else {
+                    // try to get name from flagcdn codes
+                    try {
+                        const flagRes = await fetch('https://flagcdn.com/en/codes.json');
+                        const flagData = await flagRes.json();
+                        if (flagData[code.toUpperCase()]) {
+                            name = flagData[code.toUpperCase()];
+                        }
+                    } catch { }
                 }
+                enriched.push({ code: lowerCode, name, photoUrl });
             }
+
+            return enriched.sort((a, b) => a.name.localeCompare(b.name));
         }
 
-        // --- render dropdown with emoji flags
+        // --- render dropdown with flag images (non-wavy)
         function renderDropdown(selectedCode) {
-            if (!countriesFull.length) return;
-            const selected = countriesFull.find(c => c.code === selectedCode) || countriesFull[0];
+            if (!countriesList.length) return;
+            const selected = countriesList.find(c => c.code === selectedCode) || countriesList[0];
             selectedCountryCode = selected.code;
 
             const html = `
                 <div class="custom-dropdown" id="customDropdown">
                     <div class="dropdown-selected" id="dropdownSelected">
-                        <span class="emoji-flag">${selected.emoji}</span>
+                        <img src="${selected.photoUrl}" alt="" id="selectedFlag" loading="lazy" onerror="this.src='https://flagcdn.com/w80/${selected.code}.png'">
                         <span id="selectedCountryText">${selected.name} (${selected.code.toUpperCase()})</span>
                     </div>
                     <div class="dropdown-panel hidden" id="dropdownPanel">
@@ -793,12 +809,12 @@
 
             const optionsDiv = document.getElementById('dropdownOptions');
             function renderOptions(filter = '') {
-                const filtered = countriesFull.filter(c => 
+                const filtered = countriesList.filter(c => 
                     c.name.toLowerCase().includes(filter.toLowerCase()) || c.code.includes(filter.toLowerCase())
                 );
                 optionsDiv.innerHTML = filtered.map(c => `
                     <div class="dropdown-option" data-code="${c.code}">
-                        <span class="emoji-flag">${c.emoji}</span>
+                        <img src="${c.photoUrl}" alt="" loading="lazy" onerror="this.src='https://flagcdn.com/w80/${c.code}.png'">
                         <span>${c.name} (${c.code.toUpperCase()})</span>
                     </div>
                 `).join('');
@@ -821,10 +837,10 @@
                 const option = e.target.closest('.dropdown-option');
                 if (!option) return;
                 const code = option.dataset.code;
-                const newSel = countriesFull.find(c => c.code === code);
+                const newSel = countriesList.find(c => c.code === code);
                 if (newSel) {
                     selectedCountryCode = code;
-                    document.querySelector('#dropdownSelected .emoji-flag').innerText = newSel.emoji;
+                    document.getElementById('selectedFlag').src = newSel.photoUrl;
                     document.getElementById('selectedCountryText').innerText = `${newSel.name} (${code.toUpperCase()})`;
                     panel.classList.add('hidden');
                 }
@@ -846,14 +862,11 @@
             username = extractUsernameFromKey(key);
             apiKey = key;
 
-            // step 1: validate
+            // step 1: validate (simple fetch to proxy/countries)
             try {
                 setStep(1, 'contacting proxy API...');
                 const testRes = await fetch(`${BASE_URL}/proxy/countries`, { headers: { 'x-api-key': key } });
                 if (!testRes.ok) throw new Error('invalid key');
-                const proxyJson = await testRes.json();
-                const proxyCodes = proxyJson.countries || [];
-                if (!proxyCodes.length) throw new Error('no countries');
             } catch (e) {
                 loadingScreen.style.display = 'none';
                 loginScreen.style.display = 'flex';
@@ -861,39 +874,26 @@
                 return false;
             }
 
-            // step 2: fetch CSV list
-            setStep(2, 'downloading country catalog...');
-            let csvCountries = await fetchCountryListFromCSV();
-
-            // step 3: finalize
-            setStep(3, 'preparing interface...');
-            if (csvCountries.length) {
-                countriesFull = csvCountries.sort((a,b) => a.name.localeCompare(b.name));
-            } else {
-                // ultimate fallback
-                const flagRes = await fetch('https://flagcdn.com/en/codes.json');
-                const flagData = await flagRes.json();
-                const proxyRes = await fetch(`${BASE_URL}/proxy/countries`, { headers: { 'x-api-key': key } });
-                const proxyJson = await proxyRes.json();
-                const codes = proxyJson.countries || [];
-                countriesFull = codes.map(code => ({
-                    code: code.toLowerCase(),
-                    name: flagData[code.toUpperCase()] || code.toUpperCase(),
-                    photoUrl: `https://flagcdn.com/w80/${code.toLowerCase()}.png`,
-                    emoji: getFlagEmoji(code)
-                })).sort((a,b) => a.name.localeCompare(b.name));
-            }
-
-            if (!countriesFull.length) {
+            // steps 2 & 3: load country data from API + enrich
+            try {
+                countriesList = await loadCountryDataFromAPI(key);
+            } catch (e) {
                 loadingScreen.style.display = 'none';
                 loginScreen.style.display = 'flex';
-                alert('no countries available');
+                alert('Failed to load country data: ' + e.message);
                 return false;
             }
 
-            // default selection
-            if (countriesFull.some(c => c.code === 'bs')) selectedCountryCode = 'bs';
-            else selectedCountryCode = countriesFull[0].code;
+            if (!countriesList.length) {
+                loadingScreen.style.display = 'none';
+                loginScreen.style.display = 'flex';
+                alert('No countries available');
+                return false;
+            }
+
+            // default selection: prefer 'bs', otherwise first
+            if (countriesList.some(c => c.code === 'bs')) selectedCountryCode = 'bs';
+            else selectedCountryCode = countriesList[0].code;
 
             renderDropdown(selectedCountryCode);
             keyBadgeTrunc.textContent = username;
@@ -910,7 +910,7 @@
             if (!selectedCountryCode) return alert('select a country');
             const port = Math.floor(Math.random() * (49999 - 10000 + 1)) + 10000;
             proxyResultDiv.innerHTML = `<div class="loading-overlay"><div class="spinner"></div> <span>generating proxy …</span></div>`;
-            proxyResultDiv.classList.remove('has-bg'); // remove any previous bg
+            proxyResultDiv.classList.remove('has-bg');
 
             try {
                 const res = await fetch(`${BASE_URL}/generate`, {
@@ -934,8 +934,8 @@
                 const asnOrg = geo?.asn?.organization || '—';
                 const flagUrl = countryCode ? `https://flagcdn.com/w40/${countryCode.toLowerCase()}.png` : '';
 
-                // get photo URL for background from selected country (or from geo if available)
-                const bgCountry = countriesFull.find(c => c.code === selectedCountryCode);
+                // get photo URL for background from selected country
+                const bgCountry = countriesList.find(c => c.code === selectedCountryCode);
                 const bgUrl = bgCountry ? bgCountry.photoUrl : '';
 
                 proxyResultDiv.innerHTML = `
