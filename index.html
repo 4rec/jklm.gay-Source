@@ -2,7 +2,6 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<meta property="og:type" content="video.other">
 <meta property="og:title" content=" ">
 <style>
 body{background:#000;margin:0;min-height:100vh;display:flex;align-items:center}
@@ -12,7 +11,8 @@ video{width:100%;max-width:1280px;margin:20px}
 <body>
 <video controls autoplay loop src=""></video>
 <script>
-document.querySelector('video').src=decodeURIComponent(window.location.pathname.slice(1));
+const url = window.location.search.slice(1) || window.location.pathname.slice(1);
+document.querySelector('video').src = decodeURIComponent(url);
 </script>
 </body>
 </html>
