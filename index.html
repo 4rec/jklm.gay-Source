@@ -300,17 +300,6 @@
     }
     
     // Download wordlist as JSON
-    function downloadWordlist() {
-      const blob = new Blob([JSON.stringify(wordList, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'jklm-wordlist.json';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    }
     
     // Event listeners
     document.getElementById('letterGroup').addEventListener('input', (e) => {
@@ -343,7 +332,6 @@
     });
     
     // Download wordlist button
-    document.getElementById('downloadWordlist').addEventListener('click', downloadWordlist);
     
     // Initialize
     loadWords();
