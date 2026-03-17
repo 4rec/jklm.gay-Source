@@ -1,274 +1,353 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>jklm.gay</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            background-color: #0a0a14;
-            color: #e6e6fa;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            font-family: 'Segoe UI', monospace;
-            overflow: hidden;
-            position: relative;
-        }
-
-        .text-container {
-            text-align: center;
-            z-index: 10;
-            position: relative;
-            padding: 20px;
-            background-color: rgba(10, 10, 20, 0.3);
-            backdrop-filter: blur(5px);
-            border-radius: 10px;
-            border: 1px solid rgba(106, 13, 173, 0.2);
-        }
-
-        .main-text {
-            font-size: 4rem;
-            font-weight: 300;
-            letter-spacing: 0.1em;
-            margin-bottom: 10px;
-            color: #9d4edd;
-            text-shadow: 0 0 15px rgba(157, 78, 221, 0.7);
-        }
-
-        .sub-text {
-            font-size: 1rem;
-            color: #b8a2d1;
-            letter-spacing: 0.05em;
-        }
-
-        .sub-text a {
-            color: #d4af37;
-            text-decoration: none;
-            transition: color 0.3s;
-        }
-
-        .sub-text a:hover {
-            color: #9d4edd;
-            text-decoration: underline;
-        }
-
-        /* Animated background elements */
-        .bg-element {
-            position: absolute;
-            border-radius: 50%;
-            background: radial-gradient(circle, rgba(106, 13, 173, 0.1) 0%, rgba(106, 13, 173, 0) 70%);
-            z-index: 1;
-        }
-
-        .bg-line {
-            position: absolute;
-            background: linear-gradient(90deg, transparent, rgba(157, 78, 221, 0.1), transparent);
-            z-index: 1;
-        }
-
-        .bg-shape {
-            position: absolute;
-            background: rgba(106, 13, 173, 0.03);
-            border: 1px solid rgba(106, 13, 173, 0.1);
-            z-index: 1;
-        }
-    </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+  <title>JKLM.GAY - Word Finder</title>
+  <meta name="description" content="Find words containing specific letter groups from a massive dictionary">
+  <link rel="stylesheet" href="https://jklm.fun/common/fonts/fonts.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pacifico&amp;display=swap">
+  <link rel="stylesheet" href="https://jklm.fun/common/base.css">
+  <link rel="stylesheet" href="https://jklm.fun/central.css">
+  <style>
+    /* Pacifico font for logo */
+    .top h1 a {
+      font-family: 'Pacifico', cursive;
+      font-weight: normal;
+      color: #fff;
+    }
+    
+    /* Light mode word finder */
+    .wordFinder {
+      background-color: #ffffff;
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px auto;
+      max-width: 800px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+      border: 1px solid #e0e0e0;
+    }
+    
+    .wordInput {
+      width: 100%;
+      padding: 12px;
+      font-size: 1.2em;
+      background-color: #f8f8f8;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      color: #333;
+      margin-bottom: 20px;
+      transition: all 0.2s;
+    }
+    
+    .wordInput:focus {
+      border-color: #4a6baf;
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(74,107,175,0.2);
+    }
+    
+    .wordResults {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 15px;
+    }
+    
+    .wordBox {
+      background-color: #f9f9f9;
+      border-radius: 4px;
+      padding: 15px;
+      min-height: 120px;
+      border: 1px solid #eaeaea;
+      transition: all 0.2s;
+      cursor: pointer;
+      position: relative;
+    }
+    
+    .wordBox:hover {
+      background-color: #f0f4ff;
+      border-color: #d0d8f0;
+    }
+    
+    .wordBox.copied::after {
+      content: 'Copied!';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: #4a6baf;
+      color: white;
+      padding: 5px 10px;
+      border-radius: 4px;
+      font-size: 0.8em;
+      opacity: 0;
+      animation: fadeInOut 1.5s ease-in-out;
+    }
+    
+    @keyframes fadeInOut {
+      0% { opacity: 0; }
+      20% { opacity: 1; }
+      80% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+    
+    .wordTitle {
+      font-weight: bold;
+      margin-bottom: 10px;
+      color: #4a6baf;
+      font-size: 0.9em;
+    }
+    
+    .wordValue {
+      font-size: 1.4em;
+      word-break: break-word;
+      color: #333;
+    }
+    
+    .infoText {
+      color: #666;
+      margin-top: 20px;
+      font-size: 0.9em;
+      text-align: center;
+      font-style: italic;
+    }
+    
+    .downloadBtn {
+      display: block;
+      margin: 30px auto;
+      padding: 10px 20px;
+      background-color: #4a6baf;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-size: 1em;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    
+    .downloadBtn:hover {
+      background-color: #3a5a9f;
+    }
+    
+    @media (max-width: 768px) {
+      .wordResults {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
 </head>
-<body>
-    <div class="text-container">
-        <div class="main-text">jklm.gay</div>
-        <div class="sub-text">made by <a href="https://github.com/recqd" target="_blank">rec</a></div>
-    </div>
 
-    <script>
-        // Create animated background elements
-        function createBackground() {
-            const body = document.body;
-            
-            // Create large gradient circles
-            for (let i = 0; i < 8; i++) {
-                const circle = document.createElement('div');
-                circle.classList.add('bg-element');
-                
-                // Random size between 200px and 500px
-                const size = Math.random() * 300 + 200;
-                circle.style.width = `${size}px`;
-                circle.style.height = `${size}px`;
-                
-                // Random position
-                const x = Math.random() * 100;
-                const y = Math.random() * 100;
-                circle.style.left = `${x}%`;
-                circle.style.top = `${y}%`;
-                
-                // Random animation
-                const duration = Math.random() * 40 + 20;
-                circle.style.animation = `float ${duration}s ease-in-out infinite`;
-                
-                // Add to page
-                body.appendChild(circle);
-                
-                // Start animation with random delay
-                setTimeout(() => {
-                    animateElement(circle);
-                }, Math.random() * 2000);
-            }
-            
-            // Create lines
-            for (let i = 0; i < 5; i++) {
-                const line = document.createElement('div');
-                line.classList.add('bg-line');
-                
-                // Random dimensions
-                const width = Math.random() * 300 + 100;
-                const height = 1;
-                line.style.width = `${width}px`;
-                line.style.height = `${height}px`;
-                
-                // Random position and rotation
-                const x = Math.random() * 100;
-                const y = Math.random() * 100;
-                const rotation = Math.random() * 360;
-                line.style.left = `${x}%`;
-                line.style.top = `${y}%`;
-                line.style.transform = `rotate(${rotation}deg)`;
-                
-                // Random animation
-                const duration = Math.random() * 30 + 15;
-                line.style.animation = `pulse ${duration}s ease-in-out infinite`;
-                
-                // Add to page
-                body.appendChild(line);
-            }
-            
-            // Create geometric shapes
-            for (let i = 0; i; i < 6; i++) {
-                const shape = document.createElement('div');
-                shape.classList.add('bg-shape');
-                
-                // Random size
-                const size = Math.random() * 80 + 40;
-                shape.style.width = `${size}px`;
-                shape.style.height = `${size}px`;
-                
-                // Random position
-                const x = Math.random() * 100;
-                const y = Math.random() * 100;
-                shape.style.left = `${x}%`;
-                shape.style.top = `${y}%`;
-                
-                // Random border radius for variety
-                if (Math.random() > 0.5) {
-                    shape.style.borderRadius = '10%';
-                } else {
-                    shape.style.borderRadius = '50%';
-                }
-                
-                // Random rotation
-                const rotation = Math.random() * 360;
-                shape.style.transform = `rotate(${rotation}deg)`;
-                
-                // Random animation
-                const duration = Math.random() * 50 + 25;
-                shape.style.animation = `drift ${duration}s linear infinite`;
-                
-                // Add to page
-                body.appendChild(shape);
-            }
-        }
+<body class="darkScrollbar">
+  <div class="base">
+    <div class="top">
+      <h1><a href="/">JKLM.GAY</a></h1>
+      <div class="setup">
+        <div class="wrap">
+          <button class="auth">
+            <img class="service" src="https://avatars.githubusercontent.com/u/259950931?v=4" alt="Guest">
+            <span class="nickname">made by rec &lt;3</span>
+          </button>
+          <div class="picture"></div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="home page">
+      <div class="banner"></div>
+      
+      <div class="wordFinder">
+        <h2 style="color: #4a6baf; margin-top: 0;">Word Finder</h2>
+        <input type="text" class="wordInput" id="letterGroup" placeholder="Enter letter group (e.g. 'rec')" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
         
-        // Animate elements
-        function animateElement(element) {
-            const x = Math.random() * 90 + 5;
-            const y = Math.random() * 90 + 5;
-            
-            element.animate([
-                { transform: `translate(0, 0)` },
-                { transform: `translate(${x - 50}px, ${y - 50}px)` }
-            ], {
-                duration: Math.random() * 20000 + 10000,
-                direction: 'alternate',
-                iterations: Infinity,
-                easing: 'ease-in-out'
-            });
-        }
+        <div class="wordResults">
+          <div class="wordBox" data-target="shortest">
+            <div class="wordTitle">Shortest</div>
+            <div class="wordValue" id="shortest">-</div>
+          </div>
+          <div class="wordBox" data-target="longest">
+            <div class="wordTitle">Longest</div>
+            <div class="wordValue" id="longest">-</div>
+          </div>
+          <div class="wordBox" data-target="hyphen">
+            <div class="wordTitle">With hyphen</div>
+            <div class="wordValue" id="hyphen">-</div>
+          </div>
+          <div class="wordBox" data-target="apostrophe">
+            <div class="wordTitle">With apostrophe</div>
+            <div class="wordValue" id="apostrophe">-</div>
+          </div>
+          <div class="wordBox" data-target="random">
+            <div class="wordTitle">Random</div>
+            <div class="wordValue" id="random">-</div>
+          </div>
+        </div>
         
-        // Add CSS keyframes dynamically
-        function addKeyframes() {
-            const style = document.createElement('style');
-            style.textContent = `
-                @keyframes float {
-                    0%, 100% {
-                        transform: translate(0, 0) scale(1);
-                        opacity: 0.1;
-                    }
-                    33% {
-                        transform: translate(30px, -20px) scale(1.05);
-                        opacity: 0.15;
-                    }
-                    66% {
-                        transform: translate(-20px, 15px) scale(0.95);
-                        opacity: 0.08;
-                    }
-                }
-                
-                @keyframes pulse {
-                    0%, 100% {
-                        opacity: 0.05;
-                    }
-                    50% {
-                        opacity: 0.2;
-                    }
-                }
-                
-                @keyframes drift {
-                    0% {
-                        transform: translate(0, 0) rotate(0deg);
-                    }
-                    100% {
-                        transform: translate(100px, 50px) rotate(360deg);
-                    }
-                }
-                
-                .main-text {
-                    animation: textGlow 4s ease-in-out infinite alternate;
-                }
-                
-                @keyframes textGlow {
-                    0% {
-                        text-shadow: 0 0 10px rgba(157, 78, 221, 0.5);
-                    }
-                    100% {
-                        text-shadow: 0 0 20px rgba(157, 78, 221, 0.8), 0 0 30px rgba(157, 78, 221, 0.4);
-                    }
-                }
-            `;
-            document.head.appendChild(style);
-        }
+        <div class="infoText">
+          Results update automatically • Press Ctrl to refresh random selections
+        </div>
         
-        // Initialize when page loads
-        document.addEventListener('DOMContentLoaded', () => {
-            addKeyframes();
-            createBackground();
-            
-            // Add subtle mouse move effect
-            document.addEventListener('mousemove', (e) => {
-                const x = (e.clientX / window.innerWidth) * 20 - 10;
-                const y = (e.clientY / window.innerHeight) * 20 - 10;
-                
-                const textContainer = document.querySelector('.text-container');
-                textContainer.style.transform = `translate(${x}px, ${y}px)`;
-            });
-        });
-    </script>
+        <button class="downloadBtn" id="downloadWordlist">Download Wordlist (JSON)</button>
+      </div>
+      
+      <div class="footer">
+        <img src="https://jklm.fun/images/sparklinlabs.svg">
+        <a href="http://sparklinlabs.com/">Not-Sparklin Labs ♥</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let wordList = [];
+    let currentLetterGroup = '';
+    let debounceTimer;
+    
+    // Fetch the word list
+    async function loadWords() {
+      try {
+        const response = await fetch('/jklm-wordlist.json');
+        wordList = await response.json();
+        console.log('Loaded', wordList.length, 'words');
+      } catch (error) {
+        console.error('Error loading word list:', error);
+      }
+    }
+    
+    // Find words containing the letter group
+    function findWords(letterGroup) {
+      letterGroup = letterGroup.toLowerCase().trim();
+      
+      if (!letterGroup || letterGroup.length === 0) {
+        clearResults();
+        return;
+      }
+      
+      currentLetterGroup = letterGroup;
+      const wordsContaining = wordList.filter(word => 
+        word.toLowerCase().includes(currentLetterGroup) &&
+        word.length >= 2 && word.length <= 30
+      );
+      
+      if (wordsContaining.length === 0) {
+        showNoResults();
+        return;
+      }
+      
+      updateResults(wordsContaining);
+    }
+    
+    function clearResults() {
+      document.getElementById('shortest').textContent = '-';
+      document.getElementById('longest').textContent = '-';
+      document.getElementById('hyphen').textContent = '-';
+      document.getElementById('apostrophe').textContent = '-';
+      document.getElementById('random').textContent = '-';
+    }
+    
+    function showNoResults() {
+      document.getElementById('shortest').textContent = 'None';
+      document.getElementById('longest').textContent = 'None';
+      document.getElementById('hyphen').textContent = 'None';
+      document.getElementById('apostrophe').textContent = 'None';
+      document.getElementById('random').textContent = 'None';
+    }
+    
+    function updateResults(wordsContaining) {
+      // Sort by length
+      const sortedByLength = [...wordsContaining].sort((a, b) => a.length - b.length);
+      
+      // Update the UI
+      document.getElementById('shortest').textContent = sortedByLength[0] || '-';
+      document.getElementById('longest').textContent = sortedByLength[sortedByLength.length - 1] || '-';
+      
+      // Find words with hyphen and apostrophe
+      const withHyphen = wordsContaining.find(word => word.includes('-'));
+      const withApostrophe = wordsContaining.find(word => word.includes("'"));
+      
+      document.getElementById('hyphen').textContent = withHyphen || 
+        wordsContaining[Math.floor(Math.random() * wordsContaining.length)] || '-';
+      document.getElementById('apostrophe').textContent = withApostrophe || 
+        wordsContaining[Math.floor(Math.random() * wordsContaining.length)] || '-';
+      document.getElementById('random').textContent = 
+        wordsContaining[Math.floor(Math.random() * wordsContaining.length)] || '-';
+    }
+    
+    function refreshRandom() {
+      if (!currentLetterGroup) return;
+      
+      const wordsContaining = wordList.filter(word => 
+        word.toLowerCase().includes(currentLetterGroup) &&
+        word.length >= 2 && word.length <= 30
+      );
+      
+      if (wordsContaining.length > 0) {
+        const withHyphen = wordsContaining.find(word => word.includes('-'));
+        const withApostrophe = wordsContaining.find(word => word.includes("'"));
+        
+        document.getElementById('hyphen').textContent = withHyphen || 
+          wordsContaining[Math.floor(Math.random() * wordsContaining.length)] || '-';
+        document.getElementById('apostrophe').textContent = withApostrophe || 
+          wordsContaining[Math.floor(Math.random() * wordsContaining.length)] || '-';
+        document.getElementById('random').textContent = 
+          wordsContaining[Math.floor(Math.random() * wordsContaining.length)] || '-';
+      }
+    }
+    
+    // Copy to clipboard function
+    function copyToClipboard(text) {
+      navigator.clipboard.writeText(text).then(() => {
+        console.log('Copied to clipboard:', text);
+      }).catch(err => {
+        console.error('Failed to copy:', err);
+      });
+    }
+    
+    // Download wordlist as JSON
+    function downloadWordlist() {
+      const blob = new Blob([JSON.stringify(wordList, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'jklm-wordlist.json';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+    
+    // Event listeners
+    document.getElementById('letterGroup').addEventListener('input', (e) => {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        findWords(e.target.value);
+      }, 300);
+    });
+    
+    document.addEventListener('keydown', (e) => {
+      if (e.ctrlKey && currentLetterGroup) {
+        e.preventDefault();
+        refreshRandom();
+      }
+    });
+    
+    // Click to copy for word boxes
+    document.querySelectorAll('.wordBox').forEach(box => {
+      box.addEventListener('click', () => {
+        const targetId = box.getAttribute('data-target');
+        const word = document.getElementById(targetId).textContent;
+        if (word && word !== '-' && word !== 'None') {
+          copyToClipboard(word);
+          box.classList.add('copied');
+          setTimeout(() => {
+            box.classList.remove('copied');
+          }, 1500);
+        }
+      });
+    });
+    
+    // Download wordlist button
+    document.getElementById('downloadWordlist').addEventListener('click', downloadWordlist);
+    
+    // Initialize
+    loadWords();
+  </script>
 </body>
 </html>
