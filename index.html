@@ -182,7 +182,7 @@
         </div>
         
         <div class="infoText">
-          Results update automatically • Press Ctrl to refresh random selections
+          Results update automatically • Press Space to refresh random selections
         </div>
         
       </div>
@@ -309,12 +309,12 @@
       }, 300);
     });
     
-    document.addEventListener('keydown', (e) => {
-      if (e.ctrlKey && currentLetterGroup) {
-        e.preventDefault();
-        refreshRandom();
-      }
-    });
+document.addEventListener('keydown', (e) => {
+  if (e.code === 'Space' && currentLetterGroup) {
+    e.preventDefault();
+    refreshRandom();
+  }
+});
     
     // Click to copy for word boxes
     document.querySelectorAll('.wordBox').forEach(box => {
