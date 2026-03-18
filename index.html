@@ -190,7 +190,7 @@
         </div>
         
         <div class="infoText">
-          Results update automatically • Press Space to refresh random selections
+          Results update automatically • Press Space to refresh selections (if multiple options exist)
         </div>
         <div class="errorMsg" id="errorMsg"></div>
       </div>
@@ -207,6 +207,20 @@
     let currentPattern = '';
     let debounceTimer;
     let lastValidWords = [];
+    
+    // Store current selections
+    let currentShortest = '-';
+    let currentLongest = '-';
+    let currentHyphen = '-';
+    let currentApostrophe = '-';
+    let currentRandom = '-';
+    
+    // Track if categories have multiple options
+    let hasMultipleShortest = false;
+    let hasMultipleLongest = false;
+    let hasMultipleHyphen = false;
+    let hasMultipleApostrophe = false;
+    let hasMultipleRandom = false;
     
     // Fetch the word list
     async function loadWords() {
@@ -274,53 +288,153 @@
     }
     
     function clearResults() {
-      document.getElementById('shortest').textContent = '-';
-      document.getElementById('longest').textContent = '-';
-      document.getElementById('hyphen').textContent = '-';
-      document.getElementById('apostrophe').textContent = '-';
-      document.getElementById('random').textContent = '-';
+      currentShortest = '-';
+      currentLongest = '-';
+      currentHyphen = '-';
+      currentApostrophe = '-';
+      currentRandom = '-';
+      
+      hasMultipleShortest = false;
+      hasMultipleLongest = false;
+      hasMultipleHyphen = false;
+      hasMultipleApostrophe = false;
+      hasMultipleRandom = false;
+      
+      updateDisplay();
     }
     
     function showNoResults() {
-      document.getElementById('shortest').textContent = 'None';
-      document.getElementById('longest').textContent = 'None';
-      document.getElementById('hyphen').textContent = 'None';
-      document.getElementById('apostrophe').textContent = 'None';
-      document.getElementById('random').textContent = 'None';
+      currentShortest = 'None';
+      currentLongest = 'None';
+      currentHyphen = 'None';
+      currentApostrophe = 'None';
+      currentRandom = 'None';
+      
+      hasMultipleShortest = false;
+      hasMultipleLongest = false;
+      hasMultipleHyphen = false;
+      hasMultipleApostrophe = false;
+      hasMultipleRandom = false;
+      
+      updateDisplay();
+    }
+    
+    function updateDisplay() {
+      document.getElementById('shortest').textContent = currentShortest;
+      document.getElementById('longest').textContent = currentLongest;
+      document.getElementById('hyphen').textContent = currentHyphen;
+      document.getElementById('apostrophe').textContent = currentApostrophe;
+      document.getElementById('random').textContent = currentRandom;
     }
     
     function updateResults(wordsContaining) {
       // Sort by length
       const sortedByLength = [...wordsContaining].sort((a, b) => a.length - b.length);
       
-      // Update the UI
-      document.getElementById('shortest').textContent = sortedByLength[0] || '-';
-      document.getElementById('longest').textContent = sortedByLength[sortedByLength.length - 1] || '-';
+      // Find all words with shortest length
+      const shortestLength = sortedByLength[0].length;
+      const allShortest = sortedByLength.filter(word => word.length === shortestLength);
+      hasMultipleShortest = allShortest.length > 1;
+      currentShortest = allShortest[Math.floor(Math.random() * allShortest.length)];
       
-      // Find words with hyphen and apostrophe
-      const withHyphen = wordsContaining.find(word => word.includes('-'));
-      const withApostrophe = wordsContaining.find(word => word.includes("'"));
+      // Find all words with longest length
+      const longestLength = sortedByLength[sortedByLength.length - 1].length;
+      const allLongest = sortedByLength.filter(word => word.length === longestLength);
+      hasMultipleLongest = allLongest.length > 1;
+      currentLongest = allLongest[Math.floor(Math.random() * allLongest.length)];
       
-      document.getElementById('hyphen').textContent = withHyphen || 
-        wordsContaining[Math.floor(Math.random() * wordsContaining.length)] || '-';
-      document.getElementById('apostrophe').textContent = withApostrophe || 
-        wordsContaining[Math.floor(Math.random() * wordsContaining.length)] || '-';
-      document.getElementById('random').textContent = 
-        wordsContaining[Math.floor(Math.random() * wordsContaining.length)] || '-';
+      // Find words with hyphen
+      const withHyphen = wordsContaining.filter(word => word.includes('-'));
+      if (withHyphen.length > 0) {
+        hasMultipleHyphen = withHyphen.length > 1;
+        currentHyphen = withHyphen[Math.floor(Math.random() * withHyphen.length)];
+      } else {
+        hasMultipleHyphen = wordsContaining.length > 1;
+        currentHyphen = wordsContaining[Math.floor(Math.random() * wordsContaining.length)];
+      }
+      
+      // Find words with apostrophe
+      const withApostrophe = wordsContaining.filter(word => word.includes("'"));
+      if (withApostrophe.length > 0) {
+        hasMultipleApostrophe = withApostrophe.length > 1;
+        currentApostrophe = withApostrophe[Math.floor(Math.random() * withApostrophe.length)];
+      } else {
+        hasMultipleApostrophe = wordsContaining.length > 1;
+        currentApostrophe = wordsContaining[Math.floor(Math.random() * wordsContaining.length)];
+      }
+      
+      // Random word
+      hasMultipleRandom = wordsContaining.length > 1;
+      currentRandom = wordsContaining[Math.floor(Math.random() * wordsContaining.length)];
+      
+      updateDisplay();
+    }
+    
+    function refreshCategory(category) {
+      if (!currentPattern || lastValidWords.length === 0) return;
+      
+      const wordsContaining = lastValidWords;
+      const sortedByLength = [...wordsContaining].sort((a, b) => a.length - b.length);
+      
+      switch(category) {
+        case 'shortest':
+          if (hasMultipleShortest) {
+            const shortestLength = sortedByLength[0].length;
+            const allShortest = sortedByLength.filter(word => word.length === shortestLength);
+            currentShortest = allShortest[Math.floor(Math.random() * allShortest.length)];
+          }
+          break;
+          
+        case 'longest':
+          if (hasMultipleLongest) {
+            const longestLength = sortedByLength[sortedByLength.length - 1].length;
+            const allLongest = sortedByLength.filter(word => word.length === longestLength);
+            currentLongest = allLongest[Math.floor(Math.random() * allLongest.length)];
+          }
+          break;
+          
+        case 'hyphen':
+          const withHyphen = wordsContaining.filter(word => word.includes('-'));
+          if (withHyphen.length > 0) {
+            if (hasMultipleHyphen) {
+              currentHyphen = withHyphen[Math.floor(Math.random() * withHyphen.length)];
+            }
+          } else {
+            if (hasMultipleHyphen) {
+              currentHyphen = wordsContaining[Math.floor(Math.random() * wordsContaining.length)];
+            }
+          }
+          break;
+          
+        case 'apostrophe':
+          const withApostrophe = wordsContaining.filter(word => word.includes("'"));
+          if (withApostrophe.length > 0) {
+            if (hasMultipleApostrophe) {
+              currentApostrophe = withApostrophe[Math.floor(Math.random() * withApostrophe.length)];
+            }
+          } else {
+            if (hasMultipleApostrophe) {
+              currentApostrophe = wordsContaining[Math.floor(Math.random() * wordsContaining.length)];
+            }
+          }
+          break;
+          
+        case 'random':
+          if (hasMultipleRandom) {
+            currentRandom = wordsContaining[Math.floor(Math.random() * wordsContaining.length)];
+          }
+          break;
+      }
+      
+      updateDisplay();
     }
     
     function refreshRandom() {
-      if (!currentPattern || lastValidWords.length === 0) return;
-      
-      const withHyphen = lastValidWords.find(word => word.includes('-'));
-      const withApostrophe = lastValidWords.find(word => word.includes("'"));
-      
-      document.getElementById('hyphen').textContent = withHyphen || 
-        lastValidWords[Math.floor(Math.random() * lastValidWords.length)] || '-';
-      document.getElementById('apostrophe').textContent = withApostrophe || 
-        lastValidWords[Math.floor(Math.random() * lastValidWords.length)] || '-';
-      document.getElementById('random').textContent = 
-        lastValidWords[Math.floor(Math.random() * lastValidWords.length)] || '-';
+      refreshCategory('shortest');
+      refreshCategory('longest');
+      refreshCategory('hyphen');
+      refreshCategory('apostrophe');
+      refreshCategory('random');
     }
     
     // Copy to clipboard function
