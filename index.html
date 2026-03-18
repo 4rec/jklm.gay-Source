@@ -222,6 +222,10 @@
     let hasMultipleApostrophe = false;
     let hasMultipleRandom = false;
     
+    // Track if hyphen/apostrophe words exist at all
+    let hasHyphenWords = false;
+    let hasApostropheWords = false;
+    
     // Fetch the word list
     async function loadWords() {
       try {
@@ -300,6 +304,9 @@
       hasMultipleApostrophe = false;
       hasMultipleRandom = false;
       
+      hasHyphenWords = false;
+      hasApostropheWords = false;
+      
       updateDisplay();
     }
     
@@ -315,6 +322,9 @@
       hasMultipleHyphen = false;
       hasMultipleApostrophe = false;
       hasMultipleRandom = false;
+      
+      hasHyphenWords = false;
+      hasApostropheWords = false;
       
       updateDisplay();
     }
@@ -345,22 +355,24 @@
       
       // Find words with hyphen
       const withHyphen = wordsContaining.filter(word => word.includes('-'));
+      hasHyphenWords = withHyphen.length > 0;
       if (withHyphen.length > 0) {
         hasMultipleHyphen = withHyphen.length > 1;
         currentHyphen = withHyphen[Math.floor(Math.random() * withHyphen.length)];
       } else {
-        hasMultipleHyphen = wordsContaining.length > 1;
-        currentHyphen = wordsContaining[Math.floor(Math.random() * wordsContaining.length)];
+        hasMultipleHyphen = false;
+        currentHyphen = 'None';
       }
       
       // Find words with apostrophe
       const withApostrophe = wordsContaining.filter(word => word.includes("'"));
+      hasApostropheWords = withApostrophe.length > 0;
       if (withApostrophe.length > 0) {
         hasMultipleApostrophe = withApostrophe.length > 1;
         currentApostrophe = withApostrophe[Math.floor(Math.random() * withApostrophe.length)];
       } else {
-        hasMultipleApostrophe = wordsContaining.length > 1;
-        currentApostrophe = wordsContaining[Math.floor(Math.random() * wordsContaining.length)];
+        hasMultipleApostrophe = false;
+        currentApostrophe = 'None';
       }
       
       // Random word
@@ -399,10 +411,6 @@
             if (hasMultipleHyphen) {
               currentHyphen = withHyphen[Math.floor(Math.random() * withHyphen.length)];
             }
-          } else {
-            if (hasMultipleHyphen) {
-              currentHyphen = wordsContaining[Math.floor(Math.random() * wordsContaining.length)];
-            }
           }
           break;
           
@@ -411,10 +419,6 @@
           if (withApostrophe.length > 0) {
             if (hasMultipleApostrophe) {
               currentApostrophe = withApostrophe[Math.floor(Math.random() * withApostrophe.length)];
-            }
-          } else {
-            if (hasMultipleApostrophe) {
-              currentApostrophe = wordsContaining[Math.floor(Math.random() * wordsContaining.length)];
             }
           }
           break;
