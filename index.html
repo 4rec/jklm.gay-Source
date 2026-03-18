@@ -128,6 +128,14 @@
       background-color: #3a5a9f;
     }
     
+    .errorMsg {
+      color: #d32f2f;
+      text-align: center;
+      margin-top: 10px;
+      font-size: 0.9em;
+      min-height: 20px;
+    }
+    
     @media (max-width: 768px) {
       .wordResults {
         grid-template-columns: 1fr;
@@ -156,7 +164,7 @@
       
       <div class="wordFinder">
         <h2 style="color: #4a6baf; margin-top: 0;">Word Finder</h2>
-        <input type="text" class="wordInput" id="letterGroup" placeholder="Enter letter group (e.g. 'rec')" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+        <input type="text" class="wordInput" id="letterGroup" placeholder="Enter letter group (e.g: 'rec') or regex (e.g: '^rec')" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
         
         <div class="wordResults">
           <div class="wordBox" data-target="shortest">
@@ -184,7 +192,7 @@
         <div class="infoText">
           Results update automatically • Press Space to refresh random selections
         </div>
-        
+        <div class="errorMsg" id="errorMsg"></div>
       </div>
       
       <div class="footer">
@@ -196,8 +204,9 @@
 
   <script>
     let wordList = [];
-    let currentLetterGroup = '';
+    let currentPattern = '';
     let debounceTimer;
+    let lastValidWords = [];
     
     // Fetch the word list
     async function loadWords() {
@@ -210,20 +219,51 @@
       }
     }
     
-    // Find words containing the letter group
-    function findWords(letterGroup) {
-      letterGroup = letterGroup.toLowerCase().trim();
+    // Find words matching the pattern (literal or regex)
+    function findWords(pattern) {
+      pattern = pattern.trim();
+      document.getElementById('errorMsg').textContent = '';
       
-      if (!letterGroup || letterGroup.length === 0) {
+      if (!pattern || pattern.length === 0) {
         clearResults();
+        lastValidWords = [];
         return;
       }
       
-      currentLetterGroup = letterGroup;
-      const wordsContaining = wordList.filter(word => 
-        word.toLowerCase().includes(currentLetterGroup) &&
-        word.length >= 2 && word.length <= 30
-      );
+      currentPattern = pattern;
+      let wordsContaining = [];
+      let isRegex = false;
+      
+      // Check if it might be a regex (contains regex special chars)
+      const regexSpecialChars = /[\\^$.|?*+()[{]/;
+      if (regexSpecialChars.test(pattern)) {
+        isRegex = true;
+      }
+      
+      if (isRegex) {
+        try {
+          const regex = new RegExp(pattern, 'i');
+          wordsContaining = wordList.filter(word => 
+            regex.test(word) && word.length >= 2 && word.length <= 30
+          );
+        } catch (error) {
+          document.getElementById('errorMsg').textContent = 'Invalid regex pattern, falling back to literal search';
+          console.error('Invalid regex:', error);
+          // Fall back to literal search
+          wordsContaining = wordList.filter(word => 
+            word.toLowerCase().includes(pattern.toLowerCase()) &&
+            word.length >= 2 && word.length <= 30
+          );
+        }
+      } else {
+        // Literal search
+        wordsContaining = wordList.filter(word => 
+          word.toLowerCase().includes(pattern.toLowerCase()) &&
+          word.length >= 2 && word.length <= 30
+        );
+      }
+      
+      lastValidWords = wordsContaining;
       
       if (wordsContaining.length === 0) {
         showNoResults();
@@ -270,24 +310,17 @@
     }
     
     function refreshRandom() {
-      if (!currentLetterGroup) return;
+      if (!currentPattern || lastValidWords.length === 0) return;
       
-      const wordsContaining = wordList.filter(word => 
-        word.toLowerCase().includes(currentLetterGroup) &&
-        word.length >= 2 && word.length <= 30
-      );
+      const withHyphen = lastValidWords.find(word => word.includes('-'));
+      const withApostrophe = lastValidWords.find(word => word.includes("'"));
       
-      if (wordsContaining.length > 0) {
-        const withHyphen = wordsContaining.find(word => word.includes('-'));
-        const withApostrophe = wordsContaining.find(word => word.includes("'"));
-        
-        document.getElementById('hyphen').textContent = withHyphen || 
-          wordsContaining[Math.floor(Math.random() * wordsContaining.length)] || '-';
-        document.getElementById('apostrophe').textContent = withApostrophe || 
-          wordsContaining[Math.floor(Math.random() * wordsContaining.length)] || '-';
-        document.getElementById('random').textContent = 
-          wordsContaining[Math.floor(Math.random() * wordsContaining.length)] || '-';
-      }
+      document.getElementById('hyphen').textContent = withHyphen || 
+        lastValidWords[Math.floor(Math.random() * lastValidWords.length)] || '-';
+      document.getElementById('apostrophe').textContent = withApostrophe || 
+        lastValidWords[Math.floor(Math.random() * lastValidWords.length)] || '-';
+      document.getElementById('random').textContent = 
+        lastValidWords[Math.floor(Math.random() * lastValidWords.length)] || '-';
     }
     
     // Copy to clipboard function
@@ -299,8 +332,6 @@
       });
     }
     
-    // Download wordlist as JSON
-    
     // Event listeners
     document.getElementById('letterGroup').addEventListener('input', (e) => {
       clearTimeout(debounceTimer);
@@ -309,12 +340,12 @@
       }, 300);
     });
     
-document.addEventListener('keydown', (e) => {
-  if (e.code === 'Space' && currentLetterGroup) {
-    e.preventDefault();
-    refreshRandom();
-  }
-});
+    document.addEventListener('keydown', (e) => {
+      if (e.code === 'Space' && currentPattern && lastValidWords.length > 0) {
+        e.preventDefault();
+        refreshRandom();
+      }
+    });
     
     // Click to copy for word boxes
     document.querySelectorAll('.wordBox').forEach(box => {
@@ -330,8 +361,6 @@ document.addEventListener('keydown', (e) => {
         }
       });
     });
-    
-    // Download wordlist button
     
     // Initialize
     loadWords();
