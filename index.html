@@ -229,7 +229,7 @@
     // Fetch the word list
     async function loadWords() {
       try {
-        const response = await fetch('/jklm-wordlist.json');
+        const response = await fetch('https://4rec.github.io/jklm.gay-Source/jklm-wordlist.json');
         wordList = await response.json();
         console.log('Loaded', wordList.length, 'words');
       } catch (error) {
